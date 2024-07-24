@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "types":["vite/client"],
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    // absoluet path import
+    "baseUrl":"./src",
+    "paths":{
+      "@api/*":["api/*"],
+      "@assets/*":["assets/*"],
+      "@components/*":["components/*"],
+      "@container/*":["container/*"],
+      "@features/*":["features/*"],
+      "@hooks/*":["hooks/*"],
+      "@pages/*":["pages/*"],
+      "@redux/*":["redux/*"],
+      "@types/*":["types/*"],
+      "@utils/*":["utils/*"],
+      "@constants/*":["constants/*"]
+    },
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src", "vite-env.d.ts","env.d.ts","node_modules/@types"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
