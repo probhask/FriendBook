@@ -8,5 +8,6 @@
 
 -Built with React, TypeScript and Tailwind CSS. Ensured efficient state management (Redux Toolkit) and smooth integration with a heedless CMS (Sanity)
 
-###HOME
+### HOME
+
 ![Alt text](./Media/1.png)
