@@ -90,11 +90,19 @@ const router = createBrowserRouter([
 
   {
     path: "login",
-    element: <Login />,
+    element: (
+      <ProtectedRoutes>
+        <Login />
+      </ProtectedRoutes>
+    ),
   },
   {
     path: "register",
-    element: <Register />,
+    element: (
+      <ProtectedRoutes>
+        <Register />
+      </ProtectedRoutes>
+    ),
   },
   { path: "*", element: <PageNotFound /> },
 ]);

@@ -16,7 +16,9 @@ const TagUserUI = React.memo(({ tagUser, totalTagUser }: Props) => {
     <span className="flex text-xs font-bold mb-5 text-slate-800 flex-nowrap text-nowrap">
       <span className="text-gray-600">tags</span>
       <span
-        onClick={() => navigate(`/profile/${tagUser._id}`)}
+        onClick={() => {
+          navigate(`/profile/${tagUser._id}`);
+        }}
         className="cursor-pointer mx-1"
       >
         {authId === tagUser._id ? "You" : tagUser.name}

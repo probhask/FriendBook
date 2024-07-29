@@ -9,8 +9,13 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
 
   if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  } else if (
+    (isLoggedIn && location.pathname === "/login") ||
+    location.pathname === "/register"
+  ) {
+    return <Navigate to="/" replace />;
   } else {
-    return children;
+    return <>{children}</>;
   }
 };
 
