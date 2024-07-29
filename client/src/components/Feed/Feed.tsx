@@ -41,13 +41,12 @@ const Feed = React.memo(() => {
   // console.log("postHasMore", postHasMore);
 
   useEffect(() => {
-    console.log(userId);
-
+    window.scroll(0, 0);
     const promise = dispatch(
       getPosts({ userId: userId, own: id ? true : false })
     );
     return () => promise.abort();
-  }, [userId]);
+  }, [id, userId]);
   return (
     <>
       {postData && (
