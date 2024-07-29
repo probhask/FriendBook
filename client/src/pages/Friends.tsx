@@ -27,7 +27,6 @@ const Friends = React.memo(() => {
       )
         .unwrap()
         .finally(() => setLoading(false));
-      console.log("rep", conversation._id);
       navigate(`/chat/messenger/${conversation._id}`);
     }
   };
@@ -37,7 +36,7 @@ const Friends = React.memo(() => {
   }, []);
   return (
     <div className="flex flex-col items-center gap-y-3 min-h-full min-w-full rounded-lg px-2 py-1.5 bg-white">
-      <h1 className="text-center w-full font-semibold text-gray-700  mt-1 text-2xl uppercase font-bold">
+      <h1 className="text-center w-full text-gray-700  mt-1 text-2xl uppercase font-bold">
         Friends
       </h1>
       <div className="flex flex-col  justify-between w-full">
@@ -50,7 +49,7 @@ const Friends = React.memo(() => {
             >
               <div
                 className="w-full h-full"
-                onClick={() => navigate(`/profile/${friend.friend._id}`)}
+                // onClick={() => navigate(`/profile/${friend.friend._id}`)}
               >
                 <ProfilePreview
                   user={friend.friend}

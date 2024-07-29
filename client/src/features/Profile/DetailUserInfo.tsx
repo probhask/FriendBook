@@ -75,9 +75,6 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
       }
     }
   }, [userId]);
-  useEffect(() => {
-    console.log(coverImgLoading);
-  }, [coverImgLoading]);
   return (
     <>
       <div className="relative mb-3 sm:mb-10">

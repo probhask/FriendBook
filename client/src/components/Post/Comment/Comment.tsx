@@ -21,7 +21,7 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
   const dispatch = useAppDispatch();
 
   const handleDelComment = (index: number) => {
-    console.log(authId, commentData[index].postedBy._id);
+    // console.log(authId, commentData[index].postedBy._id);
 
     if (authId === commentData[index].postedBy._id)
       dispatch(deleteComment({ commentId: commentData[index]._id }));

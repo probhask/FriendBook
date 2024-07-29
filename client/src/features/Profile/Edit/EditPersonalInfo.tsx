@@ -56,7 +56,7 @@ const EditPersonalInfo = React.memo(() => {
         });
         // return;
       }
-      console.log(values);
+      // console.log(values);
 
       dispatch(
         updatePersonalInfo({

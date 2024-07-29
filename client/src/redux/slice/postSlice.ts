@@ -61,7 +61,7 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "error in getting post";
         state.hasMore = false;
-        console.log(state.error);
+        // console.log(state.error);
       });
 
     builder
