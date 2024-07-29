@@ -23,7 +23,7 @@ const MessageUIContainer = React.memo(({ messages }: Props) => {
     }
   };
   return (
-    <div className="overflow-y-auto no-scrollbar flex flex-col px-2 sm:px-5 gap-y-10 pt-5 pb-16 h-full">
+    <div className="overflow-y-auto no-scrollbar flex flex-col px-2 sm:px-5 gap-y-10 pt-5 h-full sticky top-0">
       {messages &&
         messages.length > 0 &&
         messages?.map((message, index) => (

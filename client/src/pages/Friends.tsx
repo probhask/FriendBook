@@ -37,8 +37,8 @@ const Friends = React.memo(() => {
   }, []);
   return (
     <div className="flex flex-col items-center gap-y-3 min-h-full min-w-full rounded-lg px-2 py-1.5 bg-white">
-      <h1 className="text-center w-full font-semibold text-gray-700  mt-1 text-2xl">
-        My Friends
+      <h1 className="text-center w-full font-semibold text-gray-700  mt-1 text-2xl uppercase font-bold">
+        Friends
       </h1>
       <div className="flex flex-col  justify-between w-full">
         {friendlist &&

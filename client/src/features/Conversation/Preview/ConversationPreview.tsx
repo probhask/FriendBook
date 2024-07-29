@@ -21,7 +21,7 @@ const ConversationPreview = React.memo(() => {
 
   return (
     <div className="flex flex-col w-full gap-y-5 px-2 py-3">
-      <h1 className="text-center font-bold mb-3">your conversation</h1>
+      <h1 className="text-center font-bold mb-3 uppercase">Messenger</h1>
       {/* search bar */}
       {/* profile courselS */}
       {/* conversation preview */}

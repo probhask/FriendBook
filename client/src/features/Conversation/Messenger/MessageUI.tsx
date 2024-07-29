@@ -1,9 +1,9 @@
 import React from "react";
 import { Message } from "../../../types";
-import { AiFillDelete, AiOutlineLoading } from "react-icons/ai";
-import { deleteMessage } from "@redux/AsyncFunctions/messageAsync";
-import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-import { selectDeletingMessageLoading } from "@redux/slice/messageSlice";
+// import { AiFillDelete, AiOutlineLoading } from "react-icons/ai";
+// import { deleteMessage } from "@redux/AsyncFunctions/messageAsync";
+// import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
+// import { selectDeletingMessageLoading } from "@redux/slice/messageSlice";
 
 type Props = {
   message: Message;
@@ -11,8 +11,8 @@ type Props = {
 };
 
 const MessageUI = React.memo(({ message, own }: Props) => {
-  const deleting = useAppSelector(selectDeletingMessageLoading);
-  const dispatch = useAppDispatch();
+  // const deleting = useAppSelector(selectDeletingMessageLoading);
+  // const dispatch = useAppDispatch();
   return (
     <div
       className={`flex justify-between w-fit max-w-[70%]  px-2 py-1 rounded-2xl text-base font-semibold ${
@@ -22,7 +22,8 @@ const MessageUI = React.memo(({ message, own }: Props) => {
       }`}
     >
       {message?.message}
-      {own && (
+      {/* own message delete func */}
+      {/* {own && (
         <span
           className=" text-2xl text-red-600 cursor-pointer"
           onClick={() => dispatch(deleteMessage({ messageId: message?._id }))}
@@ -33,7 +34,7 @@ const MessageUI = React.memo(({ message, own }: Props) => {
             <AiFillDelete />
           )}
         </span>
-      )}
+      )} */}
     </div>
   );
 });

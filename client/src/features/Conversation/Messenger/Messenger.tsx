@@ -35,7 +35,7 @@ const Messanger = React.memo(() => {
   return messageLoading ? (
     <MessengerShimmer />
   ) : (
-    <div className="relative min-h-full h-full w-full overflow-x-hidden no-scrollbar flex flex-col">
+    <div className="relative min-h-full w-full overflow-x-hidden no-scrollbar flex flex-col h-[83.9vh]">
       <MessangerHeader conversationUser={messagePartner} />
 
       <MessageContainer messages={messageData} />
