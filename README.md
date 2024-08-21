@@ -2,10 +2,14 @@
 
 FriendBook is a social media platform designed to allow users to connect, share posts, and interact with friends. This report details the structure, technologies used, and optimization techniques applied to both the frontend and backend of the project.
 
-- ![Alt text](./Media/1.png)
-
 - Project is deployed on netlify
-  [Website Link 🔗](https://sanityfriendsbook.netlify.app) - https://sanityfriendsbook.netlify.app
+  [Website Link 🔗](https://sanityfriendsbook.netlify.app)
+
+```bash
+https://sanityfriendsbook.netlify.app
+```
+
+![Alt text](./Media/1.png)
 
 ## Frontend Overview (src Folder)
 
@@ -72,7 +76,7 @@ The schemaTypes directory defines data models for the backend comment.tso:
 ### Data Models Overview
 
 1. **User Model (user.ts)**: Manages user profiles.
-2. **Post Model (posts.ts)**Comment Model (comment.ts)posts.
+2. **Post Model (posts.ts)**: Comment Model (comment.ts)posts.
 3. **Comment Model (comment.ts)**: Manages user comments.
 4. **Like Model (`like.ts`)**: Tracks likes on posts and comments.
 5. **Story Model (`stories.ts`)**: Defines ephemeral content (Stories).
