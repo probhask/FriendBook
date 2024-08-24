@@ -1,46 +1,48 @@
-import React, { ErrorInfo } from "react";
+import React, { Component, ReactNode } from "react";
 
-type Props = {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-};
-type State = {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
   hasError: boolean;
-};
+}
 
-class ErrorBoundary extends React.Component<Props, State> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+    // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.log("ErrorBoundary caught an error", error, info);
-    this.setState({ hasError: true });
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // You can also log the error to an error reporting service
+    console.error("Uncaught error:", error, errorInfo);
   }
 
-  render(): React.ReactNode {
+  render() {
     if (this.state.hasError) {
-      console.log("error hai");
-
-      if (this.props.fallback) {
-        this.props.fallback;
-      } else {
-        return (
-          <div className="text-2xl md:text-4xl font-semibold my-10 text-center flex flex-col items-center justify-center gap-y-5">
-            <p> Something went Wrong !</p>
-            <a
-              href="/"
-              className="px-2 py-0.5 bg-orange-400 text-white font-semibold mt-5"
-            >
-              GO Back to HomePage
-            </a>
+      // You can render any custom fallback UI
+      return (
+        <div className="w-screen h-screen flex justify-center items-center bg-white">
+          <div className="border bg-blue-600 p-3 px-5 rounded-md text-center text-[#F7EFE5]">
+            <h1 className="text-4xl font-bold  uppercase mb-1">OOPS!</h1>
+            <h1 className="text-2xl font-bold  uppercase mb-3">
+              Something went wrong.
+            </h1>
+            <p className="text-lg ">Please try refreshing the page</p>
           </div>
-        );
-      }
-    } else {
-      return this.props.children;
+        </div>
+      );
     }
+
+    return this.props.children;
   }
 }
+
 export default ErrorBoundary;

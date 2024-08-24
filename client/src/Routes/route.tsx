@@ -1,14 +1,24 @@
 import { createBrowserRouter } from "react-router-dom";
 import ProtectedRoutes from "@utils/ProtectedRoutes";
-import {
-  Conversation,
-  FindFriend,
-  Friends,
-  Home,
-  Login,
-  Profile,
-  Register,
-} from "@pages/index";
+// import {
+//   Conversation,
+//   FindFriend,
+//   Friends,
+//   Home,
+//   Login,
+//   Profile,
+//   Register,
+// } from "@pages/index";
+import { lazy, Suspense } from "react";
+
+const Home = lazy(() => import("@pages/Home"));
+const Login = lazy(() => import("@pages/Login"));
+const Register = lazy(() => import("@pages/Register"));
+const Profile = lazy(() => import("@pages/Profile"));
+const Friends = lazy(() => import("@pages/Friends"));
+const FindFriend = lazy(() => import("@pages/FindFriend"));
+const Conversation = lazy(() => import("@pages/Conversation"));
+
 import HomeLayout from "@container/HomeLayout";
 import {
   ConversationPreview,
@@ -20,61 +30,118 @@ import {
 import PageNotFound from "@components/PageNotFound/PageNotFound";
 import { FullScreenImage } from "@components/index";
 import CreateStories from "@features/Stories/CreateStories";
+import { BiLoaderCircle } from "react-icons/bi";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ProtectedRoutes>
-        <HomeLayout />
-      </ProtectedRoutes>
+      <Suspense
+        fallback={
+          <div className="w-screen h-screen flex justify-center items-center">
+            <BiLoaderCircle className="size-10 md:size-20 animate-spin text-blue-700 duration-75 ease-in" />
+          </div>
+        }
+      >
+        <ProtectedRoutes>
+          <HomeLayout />
+        </ProtectedRoutes>
+      </Suspense>
     ),
     children: [
       {
         path: "/",
-        element: <Home />,
+        element: (
+          <Suspense>
+            <Home />
+          </Suspense>
+        ),
       },
       {
         path: "/create-post",
-        element: <CreatePostForm />,
+        element: (
+          <Suspense>
+            <CreatePostForm />
+          </Suspense>
+        ),
       },
       {
         path: "/create-stories",
-        element: <CreateStories />,
+        element: (
+          <Suspense>
+            <CreateStories />
+          </Suspense>
+        ),
       },
       {
         path: "/find-friend",
-        element: <FindFriend />,
+        element: (
+          <Suspense>
+            <FindFriend />
+          </Suspense>
+        ),
       },
       {
         path: "/friends",
-        element: <Friends />,
+        element: (
+          <Suspense>
+            <Friends />
+          </Suspense>
+        ),
       },
       {
         path: "/chat",
-        element: <Conversation />,
+        element: (
+          <Suspense>
+            <Conversation />
+          </Suspense>
+        ),
         children: [
           {
             // path: "chat/",
             index: true,
-            element: <ConversationPreview />,
+            element: (
+              <Suspense>
+                <ConversationPreview />
+              </Suspense>
+            ),
           },
           {
             path: "/chat/messenger/:conversationId",
-            element: <Messenger />,
+            element: (
+              <Suspense>
+                <Messenger />
+              </Suspense>
+            ),
           },
         ],
       },
 
       {
         path: "/profile",
-        element: <Profile />,
+        element: (
+          <Suspense>
+            <Profile />
+          </Suspense>
+        ),
         children: [
           {
             path: "edit-personal-info",
-            element: <EditPersonalInfo />,
+            element: (
+              <Suspense>
+                <EditPersonalInfo />
+              </Suspense>
+            ),
           },
-          { path: ":id", index: true, element: <UserProfileInfo /> },
+          {
+            path: ":id",
+            index: true,
+            element: (
+              <Suspense>
+                <UserProfileInfo />
+              </Suspense>
+            ),
+          },
         ],
       },
     ],
@@ -82,26 +149,32 @@ const router = createBrowserRouter([
   {
     path: "/full-screen/:src",
     element: (
-      <ProtectedRoutes>
-        <FullScreenImage />
-      </ProtectedRoutes>
+      <Suspense>
+        <ProtectedRoutes>
+          <FullScreenImage />
+        </ProtectedRoutes>
+      </Suspense>
     ),
   },
 
   {
     path: "login",
     element: (
-      <ProtectedRoutes>
-        <Login />
-      </ProtectedRoutes>
+      <Suspense>
+        <ProtectedRoutes>
+          <Login />
+        </ProtectedRoutes>
+      </Suspense>
     ),
   },
   {
     path: "register",
     element: (
-      <ProtectedRoutes>
-        <Register />
-      </ProtectedRoutes>
+      <Suspense>
+        <ProtectedRoutes>
+          <Register />
+        </ProtectedRoutes>
+      </Suspense>
     ),
   },
   { path: "*", element: <PageNotFound /> },
