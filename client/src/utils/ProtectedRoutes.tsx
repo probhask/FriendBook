@@ -7,7 +7,11 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const isLoggedIn = useAppSelector(getAuthLoginStatus);
   const location = useLocation();
 
-  if (!isLoggedIn) {
+  if (
+    !isLoggedIn &&
+    location.pathname !== "/login" &&
+    location.pathname !== "/register"
+  ) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   } else if (
     (isLoggedIn && location.pathname === "/login") ||
