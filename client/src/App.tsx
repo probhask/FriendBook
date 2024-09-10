@@ -1,13 +1,19 @@
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import router from "./Routes/route";
+import { Suspense } from "react";
+import ErrorBoundary from "@components/ErrorBoundary/ErrorBoundary";
 
 function App() {
   return (
-    <div className="relative">
-      <RouterProvider router={router} />
-      <Toaster position="top-center" />
-    </div>
+    <Suspense>
+      <ErrorBoundary>
+        <div className="relative">
+          <RouterProvider router={router} />
+          <Toaster position="top-center" />
+        </div>
+      </ErrorBoundary>
+    </Suspense>
   );
 }
 
