@@ -7,6 +7,7 @@ import {
   likePost,
   unlikePost,
 } from "../AsyncFunctions/postAsync";
+import { addComment, deleteComment } from "../AsyncFunctions/commentAsync";
 import { RootState } from "../store";
 import toast from "react-hot-toast";
 
@@ -110,73 +111,71 @@ const postSlice = createSlice({
 
     builder
       .addCase(likePost.pending, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return { ...post, isLikedByUser: true };
-          }
-          return post;
-        });
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post && !post.isLikedByUser) {
+          post.isLikedByUser = true;
+          post.likeCount += 1;
+        }
       })
-
       .addCase(likePost.fulfilled, (state, action) => {
-        const data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return {
-              ...post,
-              isLikedByUser: true,
-              LikedInfo: { _id: action.payload },
-            };
-          }
-          return post;
-        });
-
-        state.data = data;
-
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post) {
+          post.isLikedByUser = true;
+          post.LikedInfo = { _id: action.payload };
+        }
         state.error = "";
       })
       .addCase(likePost.rejected, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return { ...post, isLikedByUser: false };
-          }
-          return post;
-        });
-
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post && post.isLikedByUser) {
+          post.isLikedByUser = false;
+          post.likeCount = Math.max(0, post.likeCount - 1);
+        }
         state.error = action.error.message || "error in liking post";
       });
 
     builder
       .addCase(unlikePost.pending, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            return { ...post, isLikedByUser: false };
-          }
-          return post;
-        });
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post && post.isLikedByUser) {
+          post.isLikedByUser = false;
+          post.likeCount = Math.max(0, post.likeCount - 1);
+        }
       })
-
       .addCase(unlikePost.fulfilled, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            return {
-              ...post,
-              isLikedByUser: false,
-              LikedInfo: null,
-            };
-          }
-          return post;
-        });
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post) {
+          post.isLikedByUser = false;
+          post.LikedInfo = null;
+        }
         state.error = "";
       })
       .addCase(unlikePost.rejected, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            return { ...post, isLikedByUser: true };
-          }
-          return post;
-        });
-
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post && !post.isLikedByUser) {
+          post.isLikedByUser = true;
+          post.likeCount += 1;
+        }
         state.error = action.error.message || "error in unliking post";
+      });
+
+    // Keep the post's comment count in sync with the comment thread.
+    builder
+      .addCase(addComment.fulfilled, (state, action) => {
+        const post = state.data.find(
+          (p) => p._id === action.payload?.postId
+        );
+        if (post) post.commentCount += 1;
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const post = state.data.find((p) => p._id === action.payload.postId);
+        if (post) post.commentCount = Math.max(0, post.commentCount - 1);
       });
   },
 });

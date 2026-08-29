@@ -76,7 +76,7 @@ const router = createBrowserRouter([
             path: "edit-personal-info",
             element: wrap(<EditPersonalInfo />),
           },
-          { path: ":id", index: true, element: wrap(<UserProfileInfo />) },
+          { path: ":id", element: wrap(<UserProfileInfo />) },
         ],
       },
     ],

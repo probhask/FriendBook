@@ -108,10 +108,10 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
         <div className="absolute top-[68%] sm:top-[75%] left-[50%] transform translate-x-[-50%] h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.3)] flex justify-center items-center bg-gray-300 border-2">
           {profileImgLoading ? (
             <p className=",min-w-full min-h-full bg-gray-600 animate-pulse"></p>
-          ) : !coverImgLoading && detailUserData.profileImage ? (
+          ) : !profileImgLoading && detailUserData.profileImage ? (
             <img
               src={detailUserData?.profileImage}
-              alt="cover-image"
+              alt={`${detailUserData?.name || "User"} profile photo`}
               className="w-full h-full max-h-full max-w-full object-cover object-top"
             />
           ) : (

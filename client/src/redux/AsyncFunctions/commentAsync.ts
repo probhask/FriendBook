@@ -36,14 +36,14 @@ export const addComment = createAsyncThunk<
   }
 });
 
-export const deleteComment = createAsyncThunk<string, { commentId: string }>(
-  "comment/deleteComment",
-  async ({ commentId }) => {
-    try {
-      await callApi("deleteComment", { commentId });
-      return commentId;
-    } catch (error) {
-      throw new Error(isInstanceOfError(error, "error deleting comment"));
-    }
+export const deleteComment = createAsyncThunk<
+  { commentId: string; postId: string },
+  { commentId: string; postId: string }
+>("comment/deleteComment", async ({ commentId, postId }) => {
+  try {
+    await callApi("deleteComment", { commentId });
+    return { commentId, postId };
+  } catch (error) {
+    throw new Error(isInstanceOfError(error, "error deleting comment"));
   }
-);
+});

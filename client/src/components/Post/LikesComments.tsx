@@ -11,50 +11,69 @@ type Props = {
   postId: string;
   LikedInfo: Like | null;
   isLikedByUser: boolean;
+  likeCount: number;
+  commentCount: number;
+};
+
+const fmt = (n: number) => {
+  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 >= 100 ? 1 : 0)}k`;
+  return String(n);
 };
 
 const LikesComments = React.memo(
-  ({ toggleComment, postId, LikedInfo, isLikedByUser }: Props) => {
+  ({
+    toggleComment,
+    postId,
+    LikedInfo,
+    isLikedByUser,
+    likeCount,
+    commentCount,
+  }: Props) => {
     const dispatch = useAppDispatch();
     const [isProcessing, setIsProcessing] = useState(false);
 
     const toggleLike = async () => {
       if (isProcessing) return;
       setIsProcessing(true);
-      if (LikedInfo) {
-        if (isLikedByUser) {
-          await dispatch(unlikePost({ likeId: LikedInfo?._id, postId }));
+      try {
+        if (isLikedByUser && LikedInfo) {
+          await dispatch(unlikePost({ likeId: LikedInfo._id, postId }));
+        } else if (!isLikedByUser) {
+          await dispatch(likePost({ postId }));
         }
-      } else {
-        await dispatch(likePost({ postId }));
+      } finally {
+        setIsProcessing(false);
       }
-      setIsProcessing(false);
     };
 
     return (
-      <div className="flex justify-evenly items-center text-base text-gray-400 gap-x-3 py-2 px-3 flex-nowrap">
+      <div className="flex items-stretch gap-x-2 py-2 px-3">
         <button
           type="button"
           aria-label={isLikedByUser ? "unlike post" : "like post"}
           aria-pressed={isLikedByUser}
           disabled={isProcessing}
-          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100 py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
+          className={`flex flex-1 items-center justify-center gap-x-2 rounded-2xl bg-gray-100 py-1.5 text-lg transition-colors hover:bg-gray-200 ${
+            isLikedByUser ? "text-blue-500" : "text-gray-500"
+          }`}
           onClick={toggleLike}
         >
-          {isLikedByUser ? (
-            <AiFillLike className="text-blue-400" />
-          ) : (
-            <AiOutlineLike />
-          )}
+          {isLikedByUser ? <AiFillLike /> : <AiOutlineLike />}
+          <span className="text-sm font-semibold tabular-nums">
+            {fmt(likeCount)}
+          </span>
         </button>
 
         <button
           type="button"
-          aria-label="toggle comments"
-          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100 py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
+          aria-label={`show ${commentCount} comments`}
+          className="flex flex-1 items-center justify-center gap-x-2 rounded-2xl bg-gray-100 py-1.5 text-lg text-gray-500 transition-colors hover:bg-gray-200"
           onClick={() => toggleComment(postId)}
         >
           <GoComment />
+          <span className="text-sm font-semibold tabular-nums">
+            {fmt(commentCount)}
+          </span>
         </button>
       </div>
     );

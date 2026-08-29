@@ -11,8 +11,12 @@ export const getPosts = createAsyncThunk<
   PostsType[],
   { userId: string; own?: boolean }
 >("post/getPosts", async ({ userId, own }, { getState }) => {
-  const pageNumber = (getState() as RootState).post.pageNumber;
-  const limit = (getState() as RootState).post.limit;
+  const state = getState() as RootState;
+  const pageNumber = state.post.pageNumber;
+  const limit = state.post.limit;
+  // The logged-in user — always used for "did *I* like this", independent of
+  // whose feed/profile is being viewed.
+  const viewerId = state.auth.data._id;
   // Query uses an exclusive-end slice `[startIndex...endIndex]`.
   const startIndex = (pageNumber - 1) * limit;
   const endIndex = pageNumber * limit;
@@ -28,8 +32,10 @@ export const getPosts = createAsyncThunk<
     postedBy->{_id, name, 'profileImage': profileImage.asset->url, isLoggedIn},
     'tagUser': tagUser[0]->{_id,name},
     "totalTagUser":count(tagUser),
-    'LikedInfo':*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]{_id},
-    'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]),
+    "likeCount": count(*[_type == 'like' && post._ref == ^._id]),
+    "commentCount": count(*[_type == 'comment' && post._ref == ^._id]),
+    'LikedInfo':*[_type == 'like' && (likeby._ref == $viewerId && post._ref == ^._id)][0]{_id},
+    'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $viewerId && post._ref == ^._id)][0]),
     _createdAt
   }`;
 
@@ -41,7 +47,7 @@ export const getPosts = createAsyncThunk<
       // Profile view — just this user's posts, newest first.
       query = `*[_type == 'post' && postedBy._ref == $userId]
         | order(_createdAt desc) [$startIndex...$endIndex]${projection}`;
-      params = { userId, startIndex, endIndex };
+      params = { userId, viewerId, startIndex, endIndex };
     } else {
       // Home feed — everyone's posts, but ranked:
       //   1. friends' posts + posts you're tagged in, before strangers'
@@ -54,10 +60,10 @@ export const getPosts = createAsyncThunk<
       query = `*[_type == 'post']
         | order(
             (postedBy._ref in $idArray || tagUser[]._ref in $idArray) desc,
-            defined(*[_type == 'like' && likeby._ref == $userId && post._ref == ^._id][0]) asc,
+            defined(*[_type == 'like' && likeby._ref == $viewerId && post._ref == ^._id][0]) asc,
             _createdAt desc
           ) [$startIndex...$endIndex]${projection}`;
-      params = { idArray, userId, startIndex, endIndex };
+      params = { idArray, viewerId, startIndex, endIndex };
     }
 
     const sanityResult = await client.fetch<PostsType[]>(query, params);

@@ -44,6 +44,8 @@ export type PostsType = {
   postedBy: User;
   tagUser: { _id: string; name: string } | null;
   totalTagUser: number;
+  likeCount: number;
+  commentCount: number;
   LikedInfo: Like | null;
   isLikedByUser: boolean;
   _createdAt: string;

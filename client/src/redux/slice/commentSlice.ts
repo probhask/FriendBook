@@ -94,7 +94,7 @@ const commentSlice = createSlice({
       })
       .addCase(deleteComment.fulfilled, (state, action) => {
         state.data = state.data.filter(
-          (comment) => comment._id !== action.payload
+          (comment) => comment._id !== action.payload.commentId
         );
         state.deletingCommentLoading = false;
         state.deletingCommentError = "";

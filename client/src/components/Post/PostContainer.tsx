@@ -35,6 +35,8 @@ const PostContainer = forwardRef<HTMLDivElement, Props>(
             postId={post._id}
             LikedInfo={post.LikedInfo}
             isLikedByUser={post.isLikedByUser}
+            likeCount={post.likeCount}
+            commentCount={post.commentCount}
           />
         </div>
 

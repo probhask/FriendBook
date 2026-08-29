@@ -23,6 +23,8 @@ const POST_PROJ = `{
   postedBy->${USER_SUB},
   'tagUser': tagUser[0]->{_id,name},
   "totalTagUser": count(tagUser),
+  "likeCount": count(*[_type=='like' && post._ref==^._id]),
+  "commentCount": count(*[_type=='comment' && post._ref==^._id]),
   'LikedInfo': *[_type=='like' && likeby._ref==$actorId && post._ref==^._id][0]{_id},
   'isLikedByUser': defined(*[_type=='like' && likeby._ref==$actorId && post._ref==^._id][0]),
   _createdAt
