@@ -1,5 +1,6 @@
 import {
   sanity,
+  isConfigured,
   json,
   HttpError,
   signSessionCookie,
@@ -512,6 +513,13 @@ function cryptoKey() {
 export const handler = async (event) => {
   if (event.httpMethod !== "POST")
     return json(405, { error: "method not allowed" });
+
+  if (!isConfigured) {
+    return json(503, {
+      error:
+        "Backend not configured — set SANITY_WRITE_TOKEN and JWT_SECRET in the Netlify site environment.",
+    });
+  }
 
   let body;
   try {

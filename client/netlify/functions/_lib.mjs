@@ -3,25 +3,32 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { parse as parseCookie, serialize as serializeCookie } from "cookie";
 
-const {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET = "production",
-  SANITY_WRITE_TOKEN,
-  SANITY_API_VERSION = "2024-06-10",
-  JWT_SECRET,
-} = process.env;
+const env = process.env;
+// projectId / dataset aren't secret — fall back to the client's VITE_ vars.
+const SANITY_PROJECT_ID =
+  env.SANITY_PROJECT_ID || env.VITE_SANITY_PROJECT_ID;
+const SANITY_DATASET =
+  env.SANITY_DATASET || env.VITE_SANITY_DATASET || "production";
+const SANITY_API_VERSION = env.SANITY_API_VERSION || "2024-06-10";
+export const SANITY_WRITE_TOKEN = env.SANITY_WRITE_TOKEN;
+export const JWT_SECRET = env.JWT_SECRET;
 
-if (!SANITY_PROJECT_ID || !SANITY_WRITE_TOKEN || !JWT_SECRET) {
-  // Surfaced once in the function logs on cold start — fail loud rather than
-  // silently issuing unsigned tokens or unauthenticated writes.
+/** True only when every server-side secret is configured. */
+export const isConfigured = Boolean(
+  SANITY_PROJECT_ID && SANITY_WRITE_TOKEN && JWT_SECRET
+);
+
+if (!isConfigured) {
   console.error(
-    "[functions] Missing env: SANITY_PROJECT_ID / SANITY_WRITE_TOKEN / JWT_SECRET"
+    "[functions] Not configured. Set SANITY_WRITE_TOKEN, JWT_SECRET" +
+      (SANITY_PROJECT_ID ? "" : ", SANITY_PROJECT_ID") +
+      " in the Netlify site environment."
   );
 }
 
 /** Server-side Sanity client. Holds the write token — never shipped to the browser. */
 export const sanity = createClient({
-  projectId: SANITY_PROJECT_ID,
+  projectId: SANITY_PROJECT_ID || "missing-project-id",
   dataset: SANITY_DATASET,
   apiVersion: SANITY_API_VERSION,
   useCdn: false,

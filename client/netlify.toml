@@ -6,14 +6,7 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# API is served at /.netlify/functions/api; expose a tidy alias too.
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api"
-  status = 200
-  force = true
-
-# SPA fallback (must stay last).
+# SPA fallback. Must be last; never rewrite the Functions path.
 [[redirects]]
   from = "/*"
   to = "/index.html"
