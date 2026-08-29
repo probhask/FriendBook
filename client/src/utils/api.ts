@@ -5,10 +5,10 @@
  * Sanity write token stays server-side. The session lives in an HttpOnly cookie,
  * so requests just need `credentials: "include"`.
  *
- * Run `npx netlify dev` locally so `/api` is served; plain `vite` does not host
- * the functions.
+ * In dev, `vite-plugin-api` serves this path from `netlify/functions/api.mjs`.
+ * In production it's the deployed Netlify Function directly (no redirect needed).
  */
-const ENDPOINT = "/api";
+const ENDPOINT = "/.netlify/functions/api";
 
 export async function callApi<T>(
   action: string,
