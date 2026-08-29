@@ -10,6 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
+    "seed": "node scripts/seed.mjs",
+    "seed:fresh": "node scripts/seed.mjs --fresh",
     "preview": "vite preview"
   },
   "dependencies": {
