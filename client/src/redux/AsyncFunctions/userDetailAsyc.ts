@@ -2,21 +2,16 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { DetailUser } from "../../types";
 import { client } from "../../utils/sanityClient";
 import { uploadImageToSanity } from "@utils/uploadImageToSanity";
-import { RootState } from "@redux/store";
+import { callApi } from "@utils/api";
 import isInstanceOfError from "@utils/isInstanceOfError";
 
 export const getUserDeatail = createAsyncThunk<DetailUser, { userId: string }>(
   "userDetail/getUserDeatail",
   async ({ userId }) => {
     try {
-      const query = `*[_type=='user' && _id=='${userId}']{
+      const query = `*[_type=='user' && _id==$userId][0]{
         _id,name,'profileImage':profileImage.asset->url,'coverImage':coverImage.asset->url,email,city}`;
-
-      const combinedPromise = client.fetch(query);
-
-      const sanityResult = await combinedPromise;
-
-      return sanityResult[0];
+      return await client.fetch<DetailUser>(query, { userId });
     } catch (error) {
       throw new Error(isInstanceOfError(error, "error fetching user detail"));
     }
@@ -26,45 +21,28 @@ export const getUserDeatail = createAsyncThunk<DetailUser, { userId: string }>(
 export const updatePersonalInfo = createAsyncThunk<
   { name: string; city: string; email: string },
   { name: string; email: string; city: string }
->(
-  "userDetail/updatePersonalInfo",
-  async ({ city, email, name }, { getState }) => {
-    const userId = (getState() as RootState).auth.data._id;
-    try {
-      const sanityResult: { city: string; name: string; email: string } =
-        await client.patch(userId).set({ city, name, email }).commit();
-
-      console.log("sanity result", sanityResult);
-      return {
-        city: sanityResult.city,
-        email: sanityResult.email,
-        name: sanityResult.name,
-      };
-    } catch (error) {
-      throw new Error(isInstanceOfError(error, "error updating info"));
-    }
+>("userDetail/updatePersonalInfo", async ({ city, email, name }) => {
+  try {
+    return await callApi<{ name: string; city: string; email: string }>(
+      "updatePersonalInfo",
+      { name, city, email }
+    );
+  } catch (error) {
+    throw new Error(isInstanceOfError(error, "error updating info"));
   }
-);
+});
 
 export const updateProfileImage = createAsyncThunk<
   string,
   { profileImage: File }
->("userDetail/updateProfileImage", async ({ profileImage }, { getState }) => {
-  const userId = (getState() as RootState).auth.data._id;
+>("userDetail/updateProfileImage", async ({ profileImage }) => {
   try {
-    const imageId = await uploadImageToSanity(profileImage);
-
-    const sanityResult = await client
-      .patch(userId)
-      .set({ profileImage: { asset: { _ref: imageId } } })
-      .commit();
-    const query = `*[_type=='user' && _id=='${userId}']{'profileImage':profileImage.asset->url}`;
-
-    const fetchUpdate = await client.fetch<{ profileImage: string }[]>(query);
-
-    console.log("sanity result", sanityResult);
-    console.log("upsdate fetch result", fetchUpdate);
-    return fetchUpdate[0].profileImage;
+    const assetId = await uploadImageToSanity(profileImage, "image");
+    const { profileImage: url } = await callApi<{ profileImage: string }>(
+      "updateProfileImage",
+      { assetId }
+    );
+    return url;
   } catch (error) {
     throw new Error(isInstanceOfError(error, "error updating profile image"));
   }
@@ -72,23 +50,14 @@ export const updateProfileImage = createAsyncThunk<
 
 export const updateCoverImage = createAsyncThunk<string, { coverImage: File }>(
   "userDetail/updateCoverImage",
-  async ({ coverImage }, { getState }) => {
-    const userId = (getState() as RootState).auth.data._id;
-
+  async ({ coverImage }) => {
     try {
-      const imageId = await uploadImageToSanity(coverImage);
-
-      const sanityResult = await client
-        .patch(userId)
-        .set({ coverImage: { asset: { _ref: imageId } } })
-        .commit();
-      const query = `*[_type=='user' && _id=='${userId}']{'coverImage':coverImage.asset->url}`;
-
-      if (sanityResult) {
-        const fetchUpdate = await client.fetch<{ coverImage: string }[]>(query);
-        return fetchUpdate[0].coverImage;
-      }
-      throw new Error("error updating cover img");
+      const assetId = await uploadImageToSanity(coverImage, "image");
+      const { coverImage: url } = await callApi<{ coverImage: string }>(
+        "updateCoverImage",
+        { assetId }
+      );
+      return url;
     } catch (error) {
       throw new Error(isInstanceOfError(error, "error updating cover image"));
     }

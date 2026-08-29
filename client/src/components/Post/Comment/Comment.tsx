@@ -1,8 +1,12 @@
 import { CommentShimmer, CreateComment } from "@components/index";
 import { deleteComment, getComment } from "@redux/AsyncFunctions/commentAsync";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-import { getAuthData } from "@redux/slice/authSlice";
-import { getCommentData, getCommentLoading } from "@redux/slice/commentSlice";
+import { getAuthId } from "@redux/slice/authSlice";
+import {
+  getCommentData,
+  getCommentLoading,
+  resetComments,
+} from "@redux/slice/commentSlice";
 import { timeAgo } from "@utils/timeAgo";
 import React, { useEffect } from "react";
 import { AiFillDelete, AiOutlineLoading } from "react-icons/ai";
@@ -12,7 +16,7 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
   // const { commentData, commentLoading } = useCommentSlice();
   const commentData = useAppSelector(getCommentData);
   const commentLoading = useAppSelector(getCommentLoading);
-  const authId = useAppSelector(getAuthData)._id;
+  const authId = useAppSelector(getAuthId);
 
   const deleteLoading = useAppSelector(
     (state) => state.comment.deletingCommentLoading
@@ -28,13 +32,10 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
   };
 
   useEffect(() => {
-    if (commentData.length === 0) {
-      dispatch(getComment({ postId }));
-    }
-    // return () => {
-    //     dispatchRef.current?.abort();
-    // };
-  }, [postId]);
+    dispatch(resetComments());
+    const promise = dispatch(getComment({ postId }));
+    return () => promise.abort();
+  }, [dispatch, postId]);
 
   return (
     <div className="flex flex-col gap-y-4 bg-white rounded-lg shadow-md w-[97%] px-2 py-2">
@@ -51,7 +52,7 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
             >
               <img
                 src={comment.postedBy?.profileImage}
-                alt=""
+                alt={comment.postedBy?.name || "commenter"}
                 className="min-w-full min-h-full"
               />
             </Link>
@@ -69,16 +70,21 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
           </div>
           <div className="flex gap-x-2 bg-gray-100">
             <p className="text-base px-1 text-gray-700">{comment?.comments}</p>
-            <div
-              className="cursor-pointer text-2xl text-red-600"
-              onClick={() => handleDelComment(index)}
-            >
-              {deleteLoading ? (
-                <AiOutlineLoading className="animate-spin" />
-              ) : (
-                <AiFillDelete />
-              )}
-            </div>
+            {authId === comment.postedBy?._id && (
+              <button
+                type="button"
+                aria-label="delete comment"
+                className="cursor-pointer text-2xl text-red-600"
+                disabled={deleteLoading}
+                onClick={() => handleDelComment(index)}
+              >
+                {deleteLoading ? (
+                  <AiOutlineLoading className="animate-spin" />
+                ) : (
+                  <AiFillDelete />
+                )}
+              </button>
+            )}
           </div>
         </div>
       ))}

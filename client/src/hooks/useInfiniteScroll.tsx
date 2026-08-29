@@ -12,33 +12,34 @@ const useInfiniteScroll = ({
   isLoading,
 }: Props): React.RefObject<HTMLDivElement> => {
   const itemRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Keep the latest callback / flags without re-creating the observer.
+  const callbackRef = useRef(callback);
+  const stateRef = useRef({ isLoading, hasMore });
+  callbackRef.current = callback;
+  stateRef.current = { isLoading, hasMore };
 
   const handleIntersect = useCallback(
-    (enteries: IntersectionObserverEntry[]) => {
-      if (enteries[0].isIntersecting && !isLoading && hasMore) {
-        callback();
+    (entries: IntersectionObserverEntry[]) => {
+      const { isLoading: loading, hasMore: more } = stateRef.current;
+      if (entries[0].isIntersecting && !loading && more) {
+        callbackRef.current();
       }
     },
-
-    [isLoading, hasMore]
+    []
   );
 
   useEffect(() => {
+    const node = itemRef.current;
     observerRef.current = new IntersectionObserver(handleIntersect, {
       root: null,
       rootMargin: "0px",
       threshold: 1.0,
     });
-    if (itemRef.current) {
-      observerRef.current.observe(itemRef.current);
-    }
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [isLoading, handleIntersect]);
+    if (node) observerRef.current.observe(node);
+    return () => observerRef.current?.disconnect();
+  }, [handleIntersect]);
 
   return itemRef;
 };

@@ -38,7 +38,16 @@ const initialState: PostSliceInitialState = {
 const postSlice = createSlice({
   name: "post",
   initialState,
-  reducers: {},
+  reducers: {
+    // Call before re-fetching a different feed (e.g. switching profiles) so
+    // pagination doesn't carry over stale page numbers / accumulated posts.
+    resetFeed: (state) => {
+      state.data = [];
+      state.pageNumber = 1;
+      state.hasMore = true;
+      state.error = "";
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getPosts.pending, (state) => {
@@ -46,8 +55,7 @@ const postSlice = createSlice({
         state.error = "";
       })
       .addCase(getPosts.fulfilled, (state, action) => {
-        state.hasMore =
-          action.payload.length > 0 || action.payload.length >= state.limit;
+        state.hasMore = action.payload.length >= state.limit;
         if (state.pageNumber === 1) {
           state.data = action.payload;
         } else {
@@ -88,7 +96,7 @@ const postSlice = createSlice({
         state.deletingPostError = "";
       })
       .addCase(deletePost.fulfilled, (state, action) => {
-        state.data.filter((post) => post._id !== action.payload);
+        state.data = state.data.filter((post) => post._id !== action.payload);
         state.deletingPostLoading = false;
         state.deletingPostError = "";
         toast.success("post deleted");
@@ -202,4 +210,5 @@ export const getDeletingPostLoading = (state: RootState) =>
 export const getDeletingPostError = (state: RootState) =>
   state.post.deletingPostError;
 
+export const { resetFeed } = postSlice.actions;
 export default postSlice.reducer;

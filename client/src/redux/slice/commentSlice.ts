@@ -40,7 +40,15 @@ const initialState: CommentSliceInitialState = {
 const commentSlice = createSlice({
   name: "comments",
   initialState,
-  reducers: {},
+  reducers: {
+    // Reset before loading a different post's comment thread.
+    resetComments: (state) => {
+      state.data = [];
+      state.pageNumber = 1;
+      state.hasMore = true;
+      state.error = "";
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getComment.pending, (state) => {
@@ -48,8 +56,12 @@ const commentSlice = createSlice({
         state.error = "";
       })
       .addCase(getComment.fulfilled, (state, action) => {
-        state.data.push(...action.payload);
-        state.hasMore = action.payload.length > 0;
+        if (state.pageNumber === 1) {
+          state.data = action.payload;
+        } else {
+          state.data.push(...action.payload);
+        }
+        state.hasMore = action.payload.length >= state.limit;
         state.pageNumber += 1;
         state.loading = false;
         state.error = "";
@@ -57,7 +69,6 @@ const commentSlice = createSlice({
       .addCase(getComment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "error in getting comments";
-        console.log(action.error);
       });
 
     builder
@@ -66,11 +77,7 @@ const commentSlice = createSlice({
         state.creatingCommentError = "";
       })
       .addCase(addComment.fulfilled, (state, action) => {
-        console.log("acrtion.payload", action.payload);
-
         state.data.push(action.payload);
-        console.log("satte.data", state.data);
-
         state.creatingCommentLoading = false;
         state.creatingCommentError = "";
       })
@@ -78,7 +85,6 @@ const commentSlice = createSlice({
         state.creatingCommentLoading = false;
         state.creatingCommentError =
           action.error.message || "adding comment failed";
-        console.log(action.error);
       });
 
     builder
@@ -96,11 +102,12 @@ const commentSlice = createSlice({
       .addCase(deleteComment.rejected, (state, action) => {
         state.deletingCommentLoading = false;
         state.deletingCommentError =
-          action.error.message || "adding comment failed";
-        console.log(action.error);
+          action.error.message || "deleting comment failed";
       });
   },
 });
+
+export const { resetComments } = commentSlice.actions;
 
 const comment = (state: RootState) => state.comment;
 export const getCommentData = createSelector(comment, (state) => state.data);

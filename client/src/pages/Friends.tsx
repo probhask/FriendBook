@@ -20,14 +20,19 @@ const Friends = React.memo(() => {
   const unfriendLoading = useAppSelector(selectUnfriendLoading);
 
   const handleMsgClick = async (userId: string) => {
+    if (!userId) return;
     setLoading(true);
-    if (userId) {
+    try {
       const conversation = await dispatch(
         checkIfNotCreateConversation({ secondUserId: userId })
-      )
-        .unwrap()
-        .finally(() => setLoading(false));
-      navigate(`/chat/messenger/${conversation._id}`);
+      ).unwrap();
+      if (conversation?._id) {
+        navigate(`/chat/messenger/${conversation._id}`);
+      }
+    } catch {
+      /* handled in slice */
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,33 +46,38 @@ const Friends = React.memo(() => {
       </h1>
       <div className="flex flex-col  justify-between w-full">
         {friendlist &&
-          friendlist.map((friend, index) => (
+          friendlist.map((friend) => (
             <div
-              key={index}
-              className="flex w-full hover:bg-gray-100 px-1 py-2"
-              onClick={() => handleMsgClick(friend.friend._id)}
+              key={friend._id}
+              className="flex items-center w-full hover:bg-gray-100 px-1 py-2 gap-x-2"
             >
-              <div
-                className="w-full h-full"
-                // onClick={() => navigate(`/profile/${friend.friend._id}`)}
+              <button
+                type="button"
+                className="w-full h-full text-left"
+                onClick={() => navigate(`/profile/${friend.friend._id}`)}
               >
                 <ProfilePreview
                   user={friend.friend}
                   imageSize={35}
                   navigateTo=""
                   isLoggedIn={friend.friend.isLoggedIn}
-                  // onclick={() => navigate(`/profile/${friend.friend._id}`)}
                   className=" w-fit"
                 />
-              </div>
+              </button>
               <button
-                className="px-2 py-0.5 text-base font-semibold text-blue-600 border border-blue-600 hover:text-white hover:bg-blue-600 cursor-pointer flex-1 min-w-24  "
+                type="button"
+                className="px-2 py-0.5 text-sm font-semibold text-blue-600 border border-blue-600 hover:text-white hover:bg-blue-600"
+                onClick={() => handleMsgClick(friend.friend._id)}
+              >
+                message
+              </button>
+              <button
+                className="px-2 py-0.5 text-sm font-semibold text-red-600 border border-red-600 hover:text-white hover:bg-red-600"
                 type="button"
                 disabled={unfriendLoading === friend._id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dispatch(unFriend({ friendShipId: friend._id }));
-                }}
+                onClick={() =>
+                  dispatch(unFriend({ friendShipId: friend._id }))
+                }
               >
                 {unfriendLoading === friend._id ? (
                   "..."

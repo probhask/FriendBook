@@ -7,6 +7,7 @@ import {
   getPostData,
   getPostHasMore,
   getPostLoading,
+  resetFeed,
 } from "@redux/slice/postSlice";
 import React, { useEffect, useState } from "react";
 
@@ -42,11 +43,12 @@ const Feed = React.memo(() => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    dispatch(resetFeed());
     const promise = dispatch(
       getPosts({ userId: userId, own: id ? true : false })
     );
     return () => promise.abort();
-  }, [id, userId]);
+  }, [dispatch, id, userId]);
   return (
     <>
       {postData && (

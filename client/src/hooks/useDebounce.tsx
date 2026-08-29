@@ -7,11 +7,12 @@ type Props<T> = {
 
 const useDebounce = <T,>({ callback, delay }: Props<T>) => {
   const timeoutRef = useRef<number | null>(null);
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
 
   useEffect(() => {
-    // Clear the timeout if the component is unmounted or if the delay changes
     timeoutRef.current = window.setTimeout(() => {
-      callback();
+      callbackRef.current();
     }, delay);
 
     return () => {
@@ -21,14 +22,12 @@ const useDebounce = <T,>({ callback, delay }: Props<T>) => {
     };
   }, [delay]);
 
-  // Debounced function
   function debouncedFunction() {
     if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current);
     }
-
     timeoutRef.current = window.setTimeout(() => {
-      callback();
+      callbackRef.current();
     }, delay);
   }
 

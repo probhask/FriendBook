@@ -1,4 +1,5 @@
 import { client } from "../utils/sanityClient";
+import isInstanceOfError from "@utils/isInstanceOfError";
 
 export const checkIsFriends = async ({
   currentUserId,
@@ -13,13 +14,10 @@ export const checkIsFriends = async ({
       currentUserId,
       friendId,
     };
-    // console.log(params);
-
-    const sanityResult = await client.fetch(query, params);
+    const sanityResult = await client.fetch<number>(query, params);
 
     return sanityResult > 0;
   } catch (error) {
-    console.log(error);
-    throw new Error(error as string);
+    throw new Error(isInstanceOfError(error, "error checking friendship"));
   }
 };

@@ -20,7 +20,7 @@ const useDetectOutSideClick = <T extends HTMLElement>(
     window.addEventListener("touchend", checkClick, true);
 
     return () => {
-      window.removeEventListener("click", checkClick, true);
+      window.removeEventListener("mouseup", checkClick, true);
       window.removeEventListener("touchend", checkClick, true);
     };
   }, [callback]);

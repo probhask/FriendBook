@@ -30,10 +30,15 @@ const Login = () => {
         .required(),
     }),
 
-    onSubmit: (values) => {
-      dispatch(
-        loginAuth({ email: values.email, password: values.password })
-      ).then(() => navigate("/"));
+    onSubmit: async (values) => {
+      try {
+        await dispatch(
+          loginAuth({ email: values.email, password: values.password })
+        ).unwrap();
+        navigate("/", { replace: true });
+      } catch {
+        /* error toast is raised in the auth slice */
+      }
     },
   });
 

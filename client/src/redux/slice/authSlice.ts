@@ -1,19 +1,34 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { createUser, loginAuth, logout } from "../AsyncFunctions/authAsync";
+import {
+  createUser,
+  fetchMe,
+  loginAuth,
+  logout,
+} from "../AsyncFunctions/authAsync";
 import toast from "react-hot-toast";
 import { RootState } from "../store";
 import { User } from "../../types";
-import { checkLocalStorage } from "../../utils/localStorage";
 
 type AuthSliceInitialState = {
   data: User;
   isLoggedIn: boolean;
+  /** false until the boot-time session check (fetchMe) has resolved */
+  authChecked: boolean;
   loading: boolean;
   error: string;
 };
+
+const emptyUser: User = {
+  _id: "",
+  name: "",
+  profileImage: "",
+  isLoggedIn: false,
+};
+
 const initialState: AuthSliceInitialState = {
-  data: checkLocalStorage("data"),
-  isLoggedIn: checkLocalStorage("isLoggedIn") || false,
+  data: emptyUser,
+  isLoggedIn: false,
+  authChecked: false,
   loading: false,
   error: "",
 };
@@ -24,6 +39,18 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers(builder) {
     builder
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.isLoggedIn = true;
+        state.authChecked = true;
+      })
+      .addCase(fetchMe.rejected, (state) => {
+        state.data = emptyUser;
+        state.isLoggedIn = false;
+        state.authChecked = true;
+      });
+
+    builder
       .addCase(loginAuth.pending, (state) => {
         state.loading = true;
         state.error = "";
@@ -33,23 +60,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = "";
         state.isLoggedIn = true;
-        toast.success("done");
-        localStorage.setItem(
-          "friendBook",
-          JSON.stringify({
-            data: state.data,
-            isLoggedIn: state.isLoggedIn,
-          })
-        );
+        state.authChecked = true;
+        toast.success("Welcome back");
       })
       .addCase(loginAuth.rejected, (state, action) => {
         state.loading = false;
-        if (action.meta.rejectedWithValue) {
-          console.log("action reject value");
-          state.error = (action.payload as string) || "login error";
-        } else {
-          state.error = action.error.message as string;
-        }
+        state.error = (action.payload as string) || "login failed";
         toast.error(state.error);
       });
 
@@ -59,27 +75,18 @@ const authSlice = createSlice({
         state.error = "";
       })
       .addCase(logout.fulfilled, (state) => {
+        state.data = emptyUser;
         state.isLoggedIn = false;
         state.loading = false;
         state.error = "";
-        toast.success("logout");
-        localStorage.setItem(
-          "friendBook",
-          JSON.stringify({
-            data: { ...state.data, isLoggedIn: false },
-            isLoggedIn: state.isLoggedIn,
-          })
-        );
+        toast.success("Signed out");
       })
       .addCase(logout.rejected, (state, action) => {
+        // Clear locally even if the network call failed.
+        state.data = emptyUser;
+        state.isLoggedIn = false;
         state.loading = false;
-        if (action.meta.rejectedWithValue) {
-          console.log("action reject value");
-          state.error = (action.payload as string) || "login error";
-        } else {
-          state.error = action.error.message as string;
-        }
-        toast.error(state.error);
+        state.error = action.error.message || "error logging out";
       });
 
     builder
@@ -91,25 +98,24 @@ const authSlice = createSlice({
         state.data = action.payload;
         state.loading = false;
         state.isLoggedIn = true;
+        state.authChecked = true;
         state.error = "";
-        toast.success("done");
-        localStorage.setItem(
-          "friendBook",
-          JSON.stringify({ data: state.data, isLoggedIn: state.isLoggedIn })
-        );
-        console.log(action.payload);
+        toast.success("Account created");
       })
       .addCase(createUser.rejected, (state, action) => {
         state.loading = false;
-
-        state.error = action.error.message as string;
+        state.error = (action.payload as string) || "could not create account";
+        toast.error(state.error);
       });
   },
 });
+
 const allAuth = (state: RootState) => state.auth;
 export const getAuthData = createSelector(allAuth, (state) => state.data);
+export const getAuthId = (state: RootState) => state.auth.data._id;
 export const getAuthLoading = (state: RootState) => state.auth.loading;
 export const getAuthError = (state: RootState) => state.auth.error;
 export const getAuthLoginStatus = (state: RootState) => state.auth.isLoggedIn;
+export const getAuthChecked = (state: RootState) => state.auth.authChecked;
 
 export default authSlice.reducer;

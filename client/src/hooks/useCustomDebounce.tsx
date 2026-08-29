@@ -8,7 +8,7 @@ const useCustomDebounce = <T,>(value: T, delay: number = 500): T => {
       setDebounceValue(value);
     }, delay);
 
-    return () => clearInterval(timeOut);
+    return () => clearTimeout(timeOut);
   }, [value, delay]);
   return debounceValue;
 };

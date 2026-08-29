@@ -40,14 +40,19 @@ const Register = () => {
         .oneOf([Yup.ref("password")], "Password must match"),
     }),
 
-    onSubmit: (values) => {
-      dispatch(
-        createUser({
-          email: values.email,
-          password: values.password,
-          name: values.name,
-        })
-      ).then(() => navigate("/"));
+    onSubmit: async (values) => {
+      try {
+        await dispatch(
+          createUser({
+            email: values.email,
+            password: values.password,
+            name: values.name,
+          })
+        ).unwrap();
+        navigate("/", { replace: true });
+      } catch {
+        /* error toast is raised in the auth slice */
+      }
     },
   });
   // useEffect(() => {

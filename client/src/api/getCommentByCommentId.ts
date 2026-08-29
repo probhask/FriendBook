@@ -1,20 +1,14 @@
 import { Comment } from "types";
 import { client } from "@utils/sanityClient";
+import isInstanceOfError from "@utils/isInstanceOfError";
 
-const getCommentByCommentId = async (commenTId: string): Promise<Comment> => {
+const getCommentByCommentId = async (commentId: string): Promise<Comment> => {
   try {
-    const query = `*[_type=='comment' && _id=='${commenTId}']{
+    const query = `*[_type=='comment' && _id==$commentId][0]{
         _id,comments,'postedBy':postedBy->{_id,name,'profileImage':profileImage.asset->url,isLoggedIn},'postId':post->_id,_createdAt}`;
-
-    const sanityResult = await client.fetch(query);
-
-    return sanityResult[0];
+    return await client.fetch<Comment>(query, { commentId });
   } catch (error) {
-    const errMsg =
-      error instanceof Error
-        ? `${error.message.slice(0, 40)}...`
-        : "error fetching comments";
-    throw new Error(errMsg as string);
+    throw new Error(isInstanceOfError(error, "error fetching comment"));
   }
 };
 export default getCommentByCommentId;

@@ -1,7 +1,10 @@
 import { useParams } from "react-router-dom";
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-import { fetchMessages, getMessage } from "@redux/AsyncFunctions/messageAsync";
+import {
+  getMessage,
+  subscribeToMessages,
+} from "@redux/AsyncFunctions/messageAsync";
 
 import {
   MessageContainer,
@@ -24,13 +27,17 @@ const Messanger = React.memo(() => {
   // console.log("conversationId", conversationId, messagePartner);
 
   useEffect(() => {
-    if (conversationId) {
-      dispatch(getMessage({ conversationId }));
-      dispatch(fetchMessages({ conversationId }));
-    } else {
+    if (!conversationId) {
       window.history.back();
+      return;
     }
-  }, [conversationId]);
+    const promise = dispatch(getMessage({ conversationId }));
+    const subscription = subscribeToMessages(conversationId, dispatch);
+    return () => {
+      promise.abort();
+      subscription.unsubscribe();
+    };
+  }, [dispatch, conversationId]);
 
   return messageLoading ? (
     <MessengerShimmer />
