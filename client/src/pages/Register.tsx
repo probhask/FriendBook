@@ -77,21 +77,6 @@ const Register = () => {
 
         <div className="flex flex-col gap-y-5 px-1 w-full">
           {/* login regostor tab button */}
-          <div className="self-end flex gap-x-4">
-            <button
-              className="px-2 py-1 bg-black text-white rounded-lg mt-2 text-xs h-7 w-20 font-semibold hover:shadow-md"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-            <button
-              className="px-2 py-1 bg-blue-600 text-white rounded-lg mt-2 text-xs h-7 w-20 font-semibold hover:shadow-md"
-              onClick={() => navigate("/register")}
-            >
-              Register
-            </button>
-          </div>
-
           <div className="flex justify-center mt-8 w-full">
             <div className="flex flex-col gap-y-3 w-[95%] sm:w-[90%] md:w-[80%] lg:w-[75%]">
               {/* heading */}
