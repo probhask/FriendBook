@@ -70,7 +70,9 @@ const StoriesConatiner = memo(() => {
         );
       })}
 
-      {storiesLoading && [1, 2].map((e) => <StoriesShimmer key={e} />)}
+      {storiesLoading &&
+        storiesData.length === 0 &&
+        [1, 2, 3].map((e) => <StoriesShimmer key={e} />)}
     </section>
   );
 });
