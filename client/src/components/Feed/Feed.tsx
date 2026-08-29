@@ -32,14 +32,13 @@ const Feed = React.memo(() => {
   const { id } = useParams();
   const userId = id ? id : authUserId;
 
-  const postInfinteScrollRef = useInfiniteScroll({
+  const lastPostRef = useInfiniteScroll<HTMLDivElement>({
     callback: () => {
       dispatch(getPosts({ userId: userId, own: id ? true : false }));
     },
     hasMore: postHasMore,
     isLoading: postLoading,
   });
-  // console.log("postHasMore", postHasMore);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -53,27 +52,15 @@ const Feed = React.memo(() => {
     <>
       {postData && (
         <div className="w-full flex flex-col gap-y-3">
-          {postData.map((post, index) => {
-            if (postData.length === index + 1) {
-              return (
-                <PostContainer
-                  key={index}
-                  post={post}
-                  ref={postInfinteScrollRef}
-                  showComment={showCommentId === post._id}
-                  setShowComment={toggleShowComment}
-                />
-              );
-            }
-            return (
-              <PostContainer
-                post={post}
-                showComment={showCommentId === post._id}
-                setShowComment={toggleShowComment}
-                key={post._id}
-              />
-            );
-          })}
+          {postData.map((post, index) => (
+            <PostContainer
+              key={post._id}
+              post={post}
+              ref={index === postData.length - 1 ? lastPostRef : undefined}
+              showComment={showCommentId === post._id}
+              setShowComment={toggleShowComment}
+            />
+          ))}
         </div>
       )}
       {postLoading && <PostShimmer />}

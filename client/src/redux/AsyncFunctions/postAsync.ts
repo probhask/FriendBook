@@ -46,7 +46,9 @@ export const getPosts = createAsyncThunk<
       //   1. friends' posts + posts you're tagged in, before strangers'
       //   2. posts you haven't liked yet, before ones you have
       //   3. newest first
-      const friendsIdsArray = await getFriendsIdsList(userId);
+      // A failed friends lookup shouldn't blank the whole feed — fall back to
+      // "no friends" ranking (everyone still shows, just not friend-prioritised).
+      const friendsIdsArray = await getFriendsIdsList(userId).catch(() => []);
       const idArray = [...friendsIdsArray, userId];
       query = `*[_type == 'post']
         | order(

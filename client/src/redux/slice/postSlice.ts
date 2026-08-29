@@ -29,7 +29,7 @@ const initialState: PostSliceInitialState = {
   error: "",
   pageNumber: 1,
   hasMore: true,
-  limit: 3,
+  limit: 6,
   creatingPostLoading: false,
   creatingPostError: "",
   deletingPostLoading: false,

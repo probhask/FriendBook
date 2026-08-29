@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 type Props = {
   callback: () => void;
@@ -6,42 +6,36 @@ type Props = {
   hasMore: boolean;
 };
 
-function useInfiniteScroll<T extends HTMLElement = HTMLDivElement>({
+/**
+ * Returns a callback ref. Attach it to the LAST item of a list; when that item
+ * scrolls into view `callback()` fires. Being a callback ref, it re-observes
+ * whatever element is currently last, so paging keeps working as items append.
+ * React calls it with `null` on unmount, which disconnects the observer.
+ */
+function useInfiniteScroll<T extends HTMLElement = HTMLElement>({
   callback,
   hasMore,
   isLoading,
-}: Props): React.RefObject<T> {
-  const itemRef = useRef<T>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+}: Props) {
+  const observer = useRef<IntersectionObserver | null>(null);
 
-  // Keep the latest callback / flags without re-creating the observer.
-  const callbackRef = useRef(callback);
-  const stateRef = useRef({ isLoading, hasMore });
-  callbackRef.current = callback;
-  stateRef.current = { isLoading, hasMore };
+  // Latest values without re-creating the ref callback.
+  const state = useRef({ callback, isLoading, hasMore });
+  state.current = { callback, isLoading, hasMore };
 
-  const handleIntersect = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const { isLoading: loading, hasMore: more } = stateRef.current;
-      if (entries[0].isIntersecting && !loading && more) {
-        callbackRef.current();
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    const node = itemRef.current;
-    observerRef.current = new IntersectionObserver(handleIntersect, {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    });
-    if (node) observerRef.current.observe(node);
-    return () => observerRef.current?.disconnect();
-  }, [handleIntersect]);
-
-  return itemRef;
+  return useCallback((node: T | null) => {
+    observer.current?.disconnect();
+    if (!node) return;
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        const { callback: cb, isLoading: loading, hasMore: more } =
+          state.current;
+        if (entries[0].isIntersecting && !loading && more) cb();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.current.observe(node);
+  }, []);
 }
 
 export default useInfiniteScroll;
