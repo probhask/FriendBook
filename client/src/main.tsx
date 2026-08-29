@@ -1,11 +1,12 @@
 import ReactDOM from "react-dom/client";
+import { Suspense } from "react";
+import { Provider } from "react-redux";
+import { HelmetProvider } from "react-helmet-async";
+import { BiLoaderCircle } from "react-icons/bi";
 import App from "./App.tsx";
 import "./index.css";
-import { Provider } from "react-redux";
 import friendBookStore from "./redux/store";
 import ErrorBoundary from "@components/ErrorBoundary/ErrorBoundary.tsx";
-import { Suspense } from "react";
-import { BiLoaderCircle } from "react-icons/bi";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Suspense
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     }
   >
     <ErrorBoundary>
-      <Provider store={friendBookStore}>
-        <App />
-      </Provider>
+      <HelmetProvider>
+        <Provider store={friendBookStore}>
+          <App />
+        </Provider>
+      </HelmetProvider>
     </ErrorBoundary>
   </Suspense>
 );

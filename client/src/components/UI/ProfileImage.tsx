@@ -12,22 +12,26 @@ type Props = {
 const ProfileImage = React.memo(
   ({ userProfileImage, size = 20, isLoggedIn, navigateTo }: Props) => {
     return (
-      <div
-        className={` flex justify-center items-center p-[2px] rounded-full relative`}
-        style={{ padding: 2 }}
-      >
+      <div className="flex justify-center items-center p-[2px] rounded-full relative">
         {isLoggedIn && (
-          <div className="size-2 rounded-full bg-green-500 absolute z-10 right-1 top-1"></div>
+          <span
+            className="size-2 rounded-full bg-green-500 absolute z-10 right-1 top-1"
+            aria-label="online"
+            role="img"
+          />
         )}
         <Link
           to={navigateTo}
-          className={`relative rounded-full overflow-hidden cursor-pointer flex items-center justify-center `}
+          className="relative rounded-full overflow-hidden cursor-pointer flex items-center justify-center shrink-0"
           style={{ width: size, height: size }}
         >
           {userProfileImage ? (
             <img
               src={userProfileImage}
-              alt="user-image"
+              alt=""
+              width={size}
+              height={size}
+              loading="lazy"
               className="min-w-full min-h-full object-cover object-top"
             />
           ) : (

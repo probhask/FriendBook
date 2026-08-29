@@ -26,7 +26,7 @@ const SendFriendRequest = memo(() => {
   useEffect(() => {
     const promise = dispatch(getSendFriendRequestList());
     return () => promise.abort();
-  }, []);
+  }, [dispatch]);
   return (
     <div className="grid sm:grid-cols-2  gap-x-2 gap-y-2 py-1.5 px-0.5">
       {sendRequestLoading &&

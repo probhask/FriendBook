@@ -73,7 +73,7 @@ const Search = React.memo(({ showSearchBar, toggleSearchBar }: Props) => {
   };
 
   useEffect(() => {
-    let action: ReturnType<typeof dispatch<any>>;
+    let action: { abort: () => void } | undefined;
     const searchUserFunc = async () => {
       action = dispatch(
         searchUser({ searchTerm: debouncedSearch.toLowerCase() })
@@ -83,7 +83,7 @@ const Search = React.memo(({ showSearchBar, toggleSearchBar }: Props) => {
       searchUserFunc();
     }
     return () => action?.abort();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, dispatch]);
 
   return (
     <>

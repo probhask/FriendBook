@@ -11,6 +11,7 @@ import useInfiniteScroll from "@hooks/useInfiniteScroll";
 import { getStories } from "@redux/AsyncFunctions/storiesAsync";
 import Stories from "./Stories";
 import { StoriesShimmer } from "@components/index";
+import { imgUrl } from "@utils/sanityClient";
 import { useNavigate } from "react-router-dom";
 
 const StoriesConatiner = memo(() => {
@@ -21,7 +22,7 @@ const StoriesConatiner = memo(() => {
   const navigate = useNavigate();
 
   const currentUserImage = useAppSelector(getAuthData)?.profileImage;
-  const inFiniteScrolRef = useInfiniteScroll({
+  const inFiniteScrolRef = useInfiniteScroll<HTMLButtonElement>({
     callback: () => dispatch(getStories()),
     hasMore: storiesHasMore,
     isLoading: storiesLoading,
@@ -30,44 +31,50 @@ const StoriesConatiner = memo(() => {
   useEffect(() => {
     const promise = dispatch(getStories());
     return () => promise.abort();
-  }, []);
-  // const inFiniteScrolRef = useRef<HTMLDivElement>(null);
+  }, [dispatch]);
+
   return (
-    <div className="flex items-center overflow-x-auto overflow-y-hidden no-scrollbar py-1 px-2 gap-x-1 bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.1)] min-h-[195px] md:min-h-[210px]">
-      <div className="relative flex justify-center items-center min-w-[7rem] max-w-[7rem] h-[10rem] md:h-[11rem] bg-slate-900 overflow-hidden rounded-lg">
-        {currentUserImage ? (
+    <section
+      aria-label="Stories"
+      className="flex items-center overflow-x-auto overflow-y-hidden no-scrollbar py-1 px-2 gap-x-2 bg-white rounded-lg shadow-[0_4px_10px_rgba(0,0,0,0.1)] min-h-[11rem] md:min-h-[12rem]"
+    >
+      <button
+        type="button"
+        onClick={() => navigate("/create-stories")}
+        aria-label="Add to your story"
+        className="relative flex justify-center items-center w-[7rem] shrink-0 h-[10rem] md:h-[11rem] bg-slate-900 overflow-hidden rounded-lg"
+      >
+        {currentUserImage && (
           <img
-            src={currentUserImage}
-            alt="user-image"
-            className="min-w-full min-h-full object-cover"
+            src={imgUrl(currentUserImage, 240)}
+            alt=""
+            className="min-w-full min-h-full object-cover opacity-80"
           />
-        ) : (
-          ""
         )}
-        <div
-          className="absolute top-1 left-1 cursor-pointer"
-          onClick={() => navigate("/create-stories")}
-        >
-          <AiFillPlusCircle className="text-white bg-blue-600 rounded-full text-4xl hover:shadow-lg" />
-        </div>
+        <span className="absolute top-1 left-1">
+          <AiFillPlusCircle className="text-white bg-blue-600 rounded-full text-4xl" />
+        </span>
+        <span className="absolute bottom-1 left-1 text-sm font-semibold text-white">
+          Add to story
+        </span>
+      </button>
 
-        <div className="absolute bottom-1 left-1 text-sm font-semibold text-gray-500 cursor-default">
-          <span>Add to story</span>
-        </div>
-      </div>
-      {/* <Stories story={story} key={index} /> */}
-
-      {storiesData &&
-        storiesData.map((story, index) => {
-          if (storiesData.length === index + 1) {
-            return <Stories story={story} ref={inFiniteScrolRef} key={index} />;
-          }
-          return <Stories story={story} key={index} />;
-        })}
+      {storiesData?.map((story, index) => {
+        const isLast = storiesData.length === index + 1;
+        return (
+          <Stories
+            story={story}
+            key={story._id}
+            ref={isLast ? inFiniteScrolRef : undefined}
+          />
+        );
+      })}
 
       {storiesLoading && [1, 2].map((e) => <StoriesShimmer key={e} />)}
-    </div>
+    </section>
   );
 });
+
+StoriesConatiner.displayName = "StoriesConatiner";
 
 export default StoriesConatiner;

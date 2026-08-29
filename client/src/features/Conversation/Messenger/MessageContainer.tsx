@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import type { Message } from "../../../types";
 import MessageUI from "./MessageUI";
 import { useAppSelector } from "@redux/hooks/storeHook";
-import { getAuthData } from "@redux/slice/authSlice";
+import { getAuthId } from "@redux/slice/authSlice";
 
 type Props = {
   messages: Message[];
@@ -10,25 +10,19 @@ type Props = {
 
 // const message = [];
 const MessageUIContainer = React.memo(({ messages }: Props) => {
-  const authId = useAppSelector(getAuthData)._id;
+  const authId = useAppSelector(getAuthId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
   return (
     <div className="overflow-y-auto no-scrollbar flex flex-col px-2 sm:px-5 gap-y-10 pt-5 h-full sticky top-0">
       {messages &&
         messages.length > 0 &&
-        messages?.map((message, index) => (
+        messages?.map((message) => (
           <MessageUI
-            key={index}
+            key={message._id}
             message={message}
             own={message?.sender?._id === authId}
           />

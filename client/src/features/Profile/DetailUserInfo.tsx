@@ -74,6 +74,8 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
         fetchIsFriends();
       }
     }
+    // Re-run only when the viewed profile changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
   return (
     <>

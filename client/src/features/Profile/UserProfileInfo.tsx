@@ -31,7 +31,7 @@ const UserProfileInfo = React.memo(() => {
         setIsFriends(false); // or handle error state as per your app logic
       }
     }
-  }, [userId]);
+  }, [userId, authId]);
 
   // if (detailUserLoading) {
   //   return <ProfileShimmer />;

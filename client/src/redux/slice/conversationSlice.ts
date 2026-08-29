@@ -33,7 +33,6 @@ const conversationSlice = createSlice({
       .addCase(getConversation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "error in getting user";
-        console.log(action.error);
       });
   },
 });

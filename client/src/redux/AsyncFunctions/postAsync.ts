@@ -32,6 +32,10 @@ export const getPosts = createAsyncThunk<
     _id,
     postDesc,
     'image': image.asset->url,
+    mediaType,
+    'video': video.asset->url,
+    'audio': audio.asset->url,
+    audioMeta,
     postedBy->{_id, name, 'profileImage': profileImage.asset->url, isLoggedIn},
     'tagUser': tagUser[0]->{_id,name},
     "totalTagUser":count(tagUser),
@@ -50,21 +54,41 @@ export const getPosts = createAsyncThunk<
   }
 });
 
-export const createPost = createAsyncThunk<
-  PostsType,
-  { postDesc: string; image: File; tagUser: string[] }
->("posts/createPost", async ({ image, postDesc, tagUser }) => {
-  try {
-    const imageAssetId = await uploadImageToSanity(image, "image");
-    return await callApi<PostsType>("createPost", {
-      postDesc,
-      imageAssetId,
-      tagUser,
-    });
-  } catch (error) {
-    throw new Error(isInstanceOfError(error, "error creating post"));
+export type CreatePostArgs = {
+  postDesc: string;
+  tagUser: string[];
+  mediaType: "image" | "video" | "audioImage";
+  image?: File;
+  video?: File;
+  audio?: File;
+  audioMeta?: { trackName?: string; startSec?: number; endSec?: number };
+};
+
+export const createPost = createAsyncThunk<PostsType, CreatePostArgs>(
+  "posts/createPost",
+  async ({ image, video, audio, audioMeta, postDesc, tagUser, mediaType }) => {
+    try {
+      const payload: Record<string, unknown> = { postDesc, tagUser, mediaType };
+
+      if (mediaType === "video") {
+        if (!video) throw new Error("a video file is required");
+        payload.videoAssetId = await uploadImageToSanity(video, "file");
+      } else {
+        if (!image) throw new Error("an image is required");
+        payload.imageAssetId = await uploadImageToSanity(image, "image");
+        if (mediaType === "audioImage") {
+          if (!audio) throw new Error("an audio track is required");
+          payload.audioAssetId = await uploadImageToSanity(audio, "file");
+          payload.audioMeta = audioMeta || {};
+        }
+      }
+
+      return await callApi<PostsType>("createPost", payload);
+    } catch (error) {
+      throw new Error(isInstanceOfError(error, "error creating post"));
+    }
   }
-});
+);
 
 export const deletePost = createAsyncThunk<string, { postId: string }>(
   "post/deletePost",

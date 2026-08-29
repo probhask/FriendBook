@@ -32,9 +32,13 @@ const LikesComments = React.memo(
     };
 
     return (
-      <div className="flex justify-evenly items-center text-base text-gray-400 gap-x-3  py-2 px-3 flex-nowrap">
-        <div
-          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100  py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
+      <div className="flex justify-evenly items-center text-base text-gray-400 gap-x-3 py-2 px-3 flex-nowrap">
+        <button
+          type="button"
+          aria-label={isLikedByUser ? "unlike post" : "like post"}
+          aria-pressed={isLikedByUser}
+          disabled={isProcessing}
+          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100 py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
           onClick={toggleLike}
         >
           {isLikedByUser ? (
@@ -42,14 +46,16 @@ const LikesComments = React.memo(
           ) : (
             <AiOutlineLike />
           )}
-        </div>
+        </button>
 
-        <div
-          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100  py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
+        <button
+          type="button"
+          aria-label="toggle comments"
+          className="flex gap-x-1 justify-center cursor-pointer hover:shadow-sm bg-gray-100 py-1 px-5 sm:px-16 md:px-24 rounded-2xl text-2xl"
           onClick={() => toggleComment(postId)}
         >
           <GoComment />
-        </div>
+        </button>
       </div>
     );
   }

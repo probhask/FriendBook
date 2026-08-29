@@ -45,7 +45,6 @@ const postSlice = createSlice({
         state.loading = false;
         state.hasMore = false;
         state.error = action.error.message || "error in getting stories";
-        console.log(state.error);
       });
 
     builder
@@ -61,7 +60,6 @@ const postSlice = createSlice({
       .addCase(createStory.rejected, (state, action) => {
         state.creatingStories = false;
         state.error = action.error.message || "error in creating story";
-        console.log(state.error);
       });
   },
 });

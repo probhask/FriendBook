@@ -47,9 +47,9 @@ const Navbar = () => {
   );
 
   return (
-    <div className=" flex flex-col justify-center md:px-3 sticky top-0 left-0 right-0 z-50 pt-2 md:py-1 gap-y-2  bg-white shadow-sm w-full ">
+    <header className="flex flex-col justify-center md:px-3 sticky top-0 left-0 right-0 z-50 pt-2 md:py-1 gap-y-2 bg-white shadow-sm w-full">
       {/* sm mode */}
-      <div className="flex flex-col  items-center gap-y-2">
+      <nav aria-label="Main" className="flex flex-col items-center gap-y-2">
         <div className="flex justify-between items-center justify-self-end   gap-x-2 w-full py-1">
           <h1
             className={` pl-1 text-blue-600 font-extrabold text-xl sm:text-2xl font-serif  md:flex-1 max-w-[240px] xl:max-w-[300px] ${
@@ -72,18 +72,21 @@ const Navbar = () => {
               showSearchBar && "hidden "
             }`}
           >
-            <span
+            <button
+              type="button"
+              aria-label="Open menu"
+              aria-expanded={menu}
               className="cursor-pointer hover:bg-slate-600 hover:text-white px-1 py-0.5 md:hidden"
               onClick={() => setMenu(true)}
             >
-              <AiOutlineMenu className=" text-[25px]" />
-            </span>
+              <AiOutlineMenu className="text-[25px]" />
+            </button>
           </div>
         </div>
         {!isProfilePath && !showSearchBar && <NavigationTabs tabs={tabs} />}
-      </div>
+      </nav>
       {menu && <SmMenu menuStatus={menu} closeMenu={() => setMenu(false)} />}
-    </div>
+    </header>
   );
 };
 

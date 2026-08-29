@@ -6,12 +6,12 @@ type Props = {
   hasMore: boolean;
 };
 
-const useInfiniteScroll = ({
+function useInfiniteScroll<T extends HTMLElement = HTMLDivElement>({
   callback,
   hasMore,
   isLoading,
-}: Props): React.RefObject<HTMLDivElement> => {
-  const itemRef = useRef<HTMLDivElement>(null);
+}: Props): React.RefObject<T> {
+  const itemRef = useRef<T>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Keep the latest callback / flags without re-creating the observer.
@@ -42,6 +42,6 @@ const useInfiniteScroll = ({
   }, [handleIntersect]);
 
   return itemRef;
-};
+}
 
 export default useInfiniteScroll;

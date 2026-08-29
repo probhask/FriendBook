@@ -18,7 +18,7 @@ const FriendSuggestionContainer = memo(() => {
   useEffect(() => {
     const promise = dispatch(getAllUser());
     return () => promise.abort();
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="px-1 py-2 bg-gray-50">

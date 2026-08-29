@@ -16,7 +16,7 @@ const ConversationPreview = React.memo(() => {
   useEffect(() => {
     const promise = dispatch(getConversation());
     return () => promise.abort();
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col w-full gap-y-5 px-2 py-3">

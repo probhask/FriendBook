@@ -143,21 +143,12 @@ const postSlice = createSlice({
         });
 
         state.error = action.error.message || "error in liking post";
-        console.log(state.error);
       });
 
     builder
       .addCase(unlikePost.pending, (state, action) => {
-        console.log("unlike");
-
         state.data = state.data.map((post) => {
           if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            console.log(
-              "matched part",
-              post.LikedInfo._id,
-              action.meta.arg.likeId
-            );
-
             return { ...post, isLikedByUser: false };
           }
           return post;
@@ -186,7 +177,6 @@ const postSlice = createSlice({
         });
 
         state.error = action.error.message || "error in unliking post";
-        console.log(state.error);
       });
   },
 });

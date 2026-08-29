@@ -1,4 +1,5 @@
 import { ProfilePreview } from "@components/index";
+import Seo from "@components/Seo/Seo";
 import { checkIfNotCreateConversation } from "@redux/AsyncFunctions/conversationAsync";
 import { getFriendsList, unFriend } from "@redux/AsyncFunctions/friendAsync";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
@@ -38,9 +39,10 @@ const Friends = React.memo(() => {
 
   useEffect(() => {
     dispatch(getFriendsList());
-  }, []);
+  }, [dispatch]);
   return (
     <div className="flex flex-col items-center gap-y-3 min-h-full min-w-full rounded-lg px-2 py-1.5 bg-white">
+      <Seo title="Friends" noIndex />
       <h1 className="text-center w-full text-gray-700  mt-1 text-2xl uppercase font-bold">
         Friends
       </h1>

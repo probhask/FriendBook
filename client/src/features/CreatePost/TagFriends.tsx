@@ -22,7 +22,7 @@ type Props = {
   setTaggedUserIds: React.Dispatch<React.SetStateAction<string[]>>;
   setFieldValue: (
     field: string,
-    value: any,
+    value: unknown,
     shouldValidate?: boolean
   ) => Promise<FormikErrors<FormikValues>> | Promise<void>;
 };
@@ -40,38 +40,7 @@ const TagFriends = React.memo(
     setTaggedUserIds,
     setFieldValue,
   }: Props) => {
-    const [friendList, setFriendList] = useState<Friend[]>([
-      // {
-      //   _id: "0c24784d-f508-412c-82b2-f9fe4ac20cae",
-      //   friend: {
-      //     _id: "5566923c-2234-4dbe-b070-cef246801ff4",
-      //     name: "Sourav Singh Negi",
-      //     profileImage:
-      //       "https://cdn.sanity.io/images/us9jlw19/production/f8956015803d298a2e528bd8ca787fcafd0b2ecb-375x500.jpg",
-      //     isLoggedIn: false,
-      //   },
-      // },
-      // {
-      //   _id: "bb44c4eb-e47d-4d08-b018-f7995be67bc2",
-      //   friend: {
-      //     _id: "7076469f-a34b-459d-b928-35c7d8b6dbdb",
-      //     name: "Ravi Sharma",
-      //     profileImage:
-      //       "https://cdn.sanity.io/images/us9jlw19/production/9f6b47a4a44ad18e76f0814530c3558f102a32b0-601x891.webp",
-      //     isLoggedIn: false,
-      //   },
-      // },
-      // {
-      //   _id: "c279c071-49d4-4fa1-a9ff-1f87bb7d168e",
-      //   friend: {
-      //     _id: "083b1f48-fe2c-416b-b459-40f20a42e85b",
-      //     name: "Shaleen Badola",
-      //     profileImage:
-      //       "https://cdn.sanity.io/images/us9jlw19/production/c4889c35d71bd9aa503e54958a84adf9237b4c51-360x420.webp",
-      //     isLoggedIn: false,
-      //   },
-      // },
-    ]);
+    const [friendList, setFriendList] = useState<Friend[]>([]);
     const [loading, setLoading] = useState(false);
     const [showFriendList, setShowFriendList] = useState(false);
     const outsideClickRef = useDetectOutSideClick<HTMLDivElement>(() =>
@@ -91,10 +60,13 @@ const TagFriends = React.memo(
       setFieldValue(name, "");
     };
 
-    const removeTaggeduser = useCallback((userID: string) => {
-      setTaggedUser((prev) => prev.filter((user) => user._id !== userID));
-      setTaggedUserIds((prev) => prev.filter((id) => id !== userID));
-    }, []);
+    const removeTaggeduser = useCallback(
+      (userID: string) => {
+        setTaggedUser((prev) => prev.filter((user) => user._id !== userID));
+        setTaggedUserIds((prev) => prev.filter((id) => id !== userID));
+      },
+      [setTaggedUser, setTaggedUserIds]
+    );
 
     useEffect(() => {
       const findFriend = async () => {
@@ -115,7 +87,7 @@ const TagFriends = React.memo(
         }
       };
       findFriend();
-    }, [debouncedSearch]);
+    }, [debouncedSearch, currentUserId, taggedUserIds]);
 
     return (
       <div className="relative flex flex-col gap-y-1 w-full" id="tagDiv">
@@ -190,39 +162,3 @@ const TagFriends = React.memo(
 );
 TagFriends.displayName = "TagFriends";
 export default TagFriends;
-
-// {
-//         _id: "0b77a678-fbbf-43a2-8538-25153b29526b",
-//         name: "Bhaskar Sharma ",
-//         profileImage:
-//           "https://cdn.sanity.io/images/us9jlw19/production/aa6f6bce38eb11b9354b72b22eaa57a81869968e-375x500.jpg",
-//         isLoggedIn: false,
-//       },
-//       {
-//         _id: "0b77a678-fbbf-43a2-853-25153b29526b",
-//         name: "Suraj Sharma ",
-//         profileImage:
-//           "https://cdn.sanity.io/images/us9jlw19/production/aa6f6bce38eb11b9354b72b22eaa57a81869968e-375x500.jpg",
-//         isLoggedIn: false,
-//       },
-//       {
-//         _id: "0b77a678-fbb-43a2-8538-25153b29526b",
-//         name: "Aditya Sharma ",
-//         profileImage:
-//           "https://cdn.sanity.io/images/us9jlw19/production/aa6f6bce38eb11b9354b72b22eaa57a81869968e-375x500.jpg",
-//         isLoggedIn: false,
-//       },
-//       {
-//         _id: "0b77a67-fbbf-43a2-8538-25153b29526b",
-//         name: "Shaleen badola ",
-//         profileImage:
-//           "https://cdn.sanity.io/images/us9jlw19/production/aa6f6bce38eb11b9354b72b22eaa57a81869968e-375x500.jpg",
-//         isLoggedIn: false,
-//       },
-//       {
-//         _id: "0b7a678-fbbf-43a2-8538-25153b29526b",
-//         name: "Sourav Singh Negi",
-//         profileImage:
-//           "https://cdn.sanity.io/images/us9jlw19/production/aa6f6bce38eb11b9354b72b22eaa57a81869968e-375x500.jpg",
-//         isLoggedIn: false,
-//       },

@@ -19,6 +19,7 @@ const USER_SUB = `{_id,name,'profileImage':profileImage.asset->url,isLoggedIn}`;
 
 const POST_PROJ = `{
   _id, postDesc, 'image': image.asset->url,
+  mediaType, 'video': video.asset->url, 'audio': audio.asset->url, audioMeta,
   postedBy->${USER_SUB},
   'tagUser': tagUser[0]->{_id,name},
   "totalTagUser": count(tagUser),
@@ -27,7 +28,7 @@ const POST_PROJ = `{
   _createdAt
 }`;
 const COMMENT_PROJ = `{_id,comments,'postedBy':postedBy->${USER_SUB},'postId':post->_id,_createdAt}`;
-const STORY_PROJ = `{_id,_createdAt,'media':media.asset->url,postedBy->{_id,name,'profileImage':profileImage.asset->url}}`;
+const STORY_PROJ = `{_id,_createdAt,'media':media.asset->url,mediaType,'video':video.asset->url,postedBy->{_id,name,'profileImage':profileImage.asset->url}}`;
 const SEND_REQ_PROJ = `{_id,'sentTo':recieveBy->{_id,name,'profileImage':profileImage.asset->url},status,_createdAt}`;
 const FRIEND_PROJ = `{
   _id,
@@ -50,7 +51,9 @@ const MESSAGE_PROJ = `{_id,message,'conversationId':conversation->_id,sender->{_
 
 const ref = (_ref) => ({ _type: "reference", _ref });
 
-const AUTH_MAX_ASSET_BYTES = 4.5 * 1024 * 1024;
+// Netlify's synchronous function request body cap is ~6MB; base64 inflates ~33%,
+// so keep the decoded payload comfortably under that.
+const MAX_ASSET_BYTES = 4.2 * 1024 * 1024;
 
 // ---- handlers ---------------------------------------------------------------
 
@@ -156,7 +159,7 @@ const handlers = {
 
     const buffer = Buffer.from(dataBase64, "base64");
     if (buffer.length === 0) throw new HttpError(400, "empty file");
-    if (buffer.length > AUTH_MAX_ASSET_BYTES)
+    if (buffer.length > MAX_ASSET_BYTES)
       throw new HttpError(413, "file too large (max ~4MB)");
 
     const asset = await sanity.assets.upload(kind, buffer, {
@@ -172,16 +175,56 @@ const handlers = {
       min: 0,
       max: 2000,
     });
-    const imageAssetId = parseId(payload.imageAssetId, "imageAssetId");
     const tagUser = idArray(payload.tagUser, "tagUser");
+    const mediaType = ["image", "video", "audioImage"].includes(
+      payload.mediaType
+    )
+      ? payload.mediaType
+      : "image";
 
-    const created = await sanity.create({
+    const doc = {
       _type: "post",
       postDesc,
-      image: { _type: "image", asset: ref(imageAssetId) },
+      mediaType,
       tagUser: tagUser.map((uid) => ({ ...ref(uid), _key: cryptoKey() })),
       postedBy: ref(actorId),
-    });
+    };
+
+    if (mediaType === "video") {
+      doc.video = {
+        _type: "file",
+        asset: ref(parseId(payload.videoAssetId, "videoAssetId")),
+      };
+      if (payload.imageAssetId) {
+        doc.image = { _type: "image", asset: ref(parseId(payload.imageAssetId)) };
+      }
+    } else {
+      doc.image = {
+        _type: "image",
+        asset: ref(parseId(payload.imageAssetId, "imageAssetId")),
+      };
+      if (mediaType === "audioImage") {
+        doc.audio = {
+          _type: "file",
+          asset: ref(parseId(payload.audioAssetId, "audioAssetId")),
+        };
+        const meta = payload.audioMeta || {};
+        doc.audioMeta = {
+          trackName:
+            typeof meta.trackName === "string"
+              ? meta.trackName.slice(0, 120)
+              : undefined,
+          startSec: Number.isFinite(meta.startSec)
+            ? Math.max(0, meta.startSec)
+            : 0,
+          endSec: Number.isFinite(meta.endSec)
+            ? Math.max(0, meta.endSec)
+            : undefined,
+        };
+      }
+    }
+
+    const created = await sanity.create(doc);
 
     const post = await sanity.fetch(`*[_id==$docId][0]${POST_PROJ}`, {
       docId: created._id,
@@ -250,12 +293,20 @@ const handlers = {
   },
 
   async createStory(payload, actorId) {
-    const mediaAssetId = parseId(payload.mediaAssetId, "mediaAssetId");
-    const created = await sanity.create({
-      _type: "stories",
-      media: { _type: "image", asset: ref(mediaAssetId) },
-      postedBy: ref(actorId),
-    });
+    const mediaType = payload.mediaType === "video" ? "video" : "image";
+    const doc = { _type: "stories", mediaType, postedBy: ref(actorId) };
+    if (mediaType === "video") {
+      doc.video = {
+        _type: "file",
+        asset: ref(parseId(payload.videoAssetId, "videoAssetId")),
+      };
+    } else {
+      doc.media = {
+        _type: "image",
+        asset: ref(parseId(payload.mediaAssetId, "mediaAssetId")),
+      };
+    }
+    const created = await sanity.create(doc);
     const story = await sanity.fetch(`*[_id==$docId][0]${STORY_PROJ}`, {
       docId: created._id,
     });

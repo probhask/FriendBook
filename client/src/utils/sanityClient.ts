@@ -21,3 +21,22 @@ export const client = createClient({
 const builder = imageUrlBuilder(client);
 
 export const urlFor = (source: string) => builder.image(source);
+
+/**
+ * A CDN-resized, auto-format URL for a Sanity image. Falls back to the raw URL
+ * if the builder can't parse the source (e.g. a non-Sanity URL).
+ */
+export const imgUrl = (
+  source: string | undefined | null,
+  width = 800,
+  height?: number
+): string | undefined => {
+  if (!source) return undefined;
+  try {
+    let b = builder.image(source).width(width).auto("format").fit("max");
+    if (height) b = b.height(height);
+    return b.url();
+  } catch {
+    return source;
+  }
+};

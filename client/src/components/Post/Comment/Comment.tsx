@@ -42,7 +42,7 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
       <h1 className="text-base">comments</h1>
 
       {commentData?.map((comment, index) => (
-        <div key={index} className="bg-gray-50/50 rounded-lg">
+        <div key={comment._id} className="bg-gray-50/50 rounded-lg">
           <div className="flex gap-x-3 items-center">
             <Link
               to={`/profile/${comment.postedBy?._id}`}

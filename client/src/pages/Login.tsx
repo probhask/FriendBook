@@ -1,4 +1,5 @@
 import { InputField, PasswordField } from "../components";
+import Seo from "@components/Seo/Seo";
 import { TfiEmail } from "react-icons/tfi";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -49,6 +50,10 @@ const Login = () => {
   // }, [isLoggedIn]);
   return (
     <div className="w-full h-full ">
+      <Seo
+        title="Log in"
+        description="Log in to FriendBook to share posts and chat with friends."
+      />
       <div className="flex justify-evenly items-start h-full mt-5 px-3 sm:px-5 md:px-10 ">
         <div className=" hidden md:flex justify-center w-full h-full">
           <div className="h-full mt-8">

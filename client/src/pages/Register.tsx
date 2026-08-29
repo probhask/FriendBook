@@ -1,4 +1,5 @@
 import { InputField, PasswordField } from "../components";
+import Seo from "@components/Seo/Seo";
 import { TfiEmail } from "react-icons/tfi";
 import { IoPersonOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
@@ -63,6 +64,10 @@ const Register = () => {
 
   return (
     <div className="w-full h-full">
+      <Seo
+        title="Create your account"
+        description="Join FriendBook — a social network for sharing posts and stories with friends."
+      />
       <div className="flex justify-evenly items-start mt-5 px-3 sm:px-5 md:px-10 h-full">
         <div className="hidden md:flex justify-center w-full h-full">
           <div className="h-full">

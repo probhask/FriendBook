@@ -18,7 +18,7 @@ const PostContainer = forwardRef<HTMLDivElement, Props>(
       if (showComment) {
         dispatch(getComment({ postId: post._id }));
       }
-    }, [post._id]);
+    }, [dispatch, post._id, showComment]);
     return (
       <div
         className="flex flex-col justify-center items-center gap-y-1"
