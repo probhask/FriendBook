@@ -9,7 +9,6 @@ export { default as MenuItems } from "./Menu/Items/MenuItems";
 // HomeLayout
 //navbar
 export { default as Navbar } from "./HomeLayout/Navbar/Navbar";
-export { default as NavigationTabs } from "./HomeLayout/Navbar/NavigationTabs";
 // smmenu
 export { default as SmMenu } from "./HomeLayout/Navbar/SmMenu/SmMenu";
 
