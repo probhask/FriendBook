@@ -1,35 +1,25 @@
 import {
-  getUserDeatail,
   updateCoverImage,
   updateProfileImage,
 } from "@redux/AsyncFunctions/userDetailAsyc";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-import { getAuthData } from "@redux/slice/authSlice";
 import {
   getDetailUserCoverImgLoading,
   getDetailUserData,
-  getDetailUserLoading,
   getDetailUserProfileImgLoading,
 } from "@redux/slice/detailUserSlice";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { AiOutlineHome } from "react-icons/ai";
 import { FaCamera } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
 import { TfiEmail } from "react-icons/tfi";
 
-type Props = {
-  userId: string;
-  fetchIsFriends: () => void;
-};
-
-const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
+const DetailUserInfo = React.memo(() => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileCoverInputRef = useRef<HTMLInputElement>(null);
   const detailUserData = useAppSelector(getDetailUserData);
-  const detailUserLoading = useAppSelector(getDetailUserLoading);
   const coverImgLoading = useAppSelector(getDetailUserCoverImgLoading);
   const profileImgLoading = useAppSelector(getDetailUserProfileImgLoading);
-  const authId = useAppSelector(getAuthData)._id;
   const dispatch = useAppDispatch();
 
   const handleCameraClick = () => {
@@ -60,25 +50,6 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
       // console.log("Selected file:", file);
     }
   };
-  const fetchData = async () => {
-    await dispatch(getUserDeatail({ userId }));
-    // await dispatch(getPosts({ userId, own: true }));
-
-    // if (mainContainerRef.current) {
-    //   mainContainerRef.current.scrollIntoView();
-    // }
-  };
-
-  useEffect(() => {
-    if (!detailUserLoading) {
-      fetchData();
-      if (userId !== authId) {
-        fetchIsFriends();
-      }
-    }
-    // Re-run only when the viewed profile changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
   return (
     <>
       <div className="relative mb-3 sm:mb-10">

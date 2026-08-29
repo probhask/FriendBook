@@ -12,21 +12,26 @@ import toast from "react-hot-toast";
 
 type DetailUserInitialState = {
   data: DetailUser;
+  /** the profile id the current data/loading state belongs to */
+  requestedId: string;
   loading: boolean;
   error: string;
   updatingCoverImg: boolean;
   updatingProfileImg: boolean;
 };
 
+const blankUser: DetailUser = {
+  profileImage: "",
+  coverImage: "",
+  email: "",
+  city: "",
+  _id: "",
+  name: " ",
+};
+
 const initialState: DetailUserInitialState = {
-  data: {
-    profileImage: "",
-    coverImage: "",
-    email: "",
-    city: "",
-    _id: "",
-    name: " ",
-  },
+  data: blankUser,
+  requestedId: "",
   loading: false,
   error: "",
   updatingCoverImg: false,
@@ -39,18 +44,28 @@ const detailUserSlice = createSlice({
   reducers: {},
   extraReducers(builder) {
     builder
-      .addCase(getUserDeatail.pending, (state) => {
+      .addCase(getUserDeatail.pending, (state, action) => {
         state.loading = true;
         state.error = "";
+        if (state.requestedId !== action.meta.arg.userId) {
+          state.data = blankUser;
+        }
+        state.requestedId = action.meta.arg.userId;
       })
       .addCase(getUserDeatail.fulfilled, (state, action) => {
-        state.data = action.payload;
         state.loading = false;
-        state.error = "";
+        if (action.payload && action.payload._id) {
+          state.data = action.payload;
+          state.error = "";
+        } else {
+          state.data = blankUser;
+          state.error = "This profile doesn't exist.";
+        }
       })
       .addCase(getUserDeatail.rejected, (state, action) => {
+        if (action.meta.aborted) return;
         state.loading = false;
-        state.error = action.error.message || "error in getting user";
+        state.error = action.error.message || "Couldn't load this profile";
       });
 
     builder
@@ -116,5 +131,7 @@ export const getDetailUserCoverImgLoading = (state: RootState) =>
 export const getDetailUserProfileImgLoading = (state: RootState) =>
   state.detailUser.updatingProfileImg;
 export const getDetailUserError = (state: RootState) => state.detailUser.error;
+export const getDetailUserRequestedId = (state: RootState) =>
+  state.detailUser.requestedId;
 
 export default detailUserSlice.reducer;
