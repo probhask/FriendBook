@@ -60,7 +60,11 @@ const postSlice = createSlice({
         if (state.pageNumber === 1) {
           state.data = action.payload;
         } else {
-          state.data.push(...action.payload);
+          // Guard against any page overlap.
+          const seen = new Set(state.data.map((p) => p._id));
+          state.data.push(
+            ...action.payload.filter((p) => !seen.has(p._id))
+          );
         }
         state.pageNumber += 1;
         state.loading = false;

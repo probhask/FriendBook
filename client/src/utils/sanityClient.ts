@@ -13,7 +13,10 @@ export const client = createClient({
   projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
   dataset: import.meta.env.VITE_SANITY_DATASET || "production",
   apiVersion: "2024-06-10",
-  useCdn: true,
+  // CDN caches reads for up to a minute — with it on, your own likes/comments
+  // appear to "vanish" on refresh until the cache expires. Correctness over the
+  // small latency win.
+  useCdn: false,
   token: import.meta.env.VITE_SANITY_READ_TOKEN || undefined,
   perspective: "published",
 });

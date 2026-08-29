@@ -65,6 +65,12 @@ const friendBookStore = configureStore({
 
 export type RootState = ReturnType<typeof friendBookStore.getState>;
 export type AppDispatch = typeof friendBookStore.dispatch;
+
+if (import.meta.env.DEV) {
+  (window as unknown as { __store: typeof friendBookStore }).__store =
+    friendBookStore;
+}
+
 export default friendBookStore;
 
 // export const persistor = persistStore(friendBookStore);

@@ -7,10 +7,15 @@ type Props = {
 };
 
 /**
- * Returns a callback ref. Attach it to the LAST item of a list; when that item
- * scrolls into view `callback()` fires. Being a callback ref, it re-observes
- * whatever element is currently last, so paging keeps working as items append.
- * React calls it with `null` on unmount, which disconnects the observer.
+ * Returns a callback ref for the LAST item of a list. When that item is in view
+ * `callback()` fires to load the next page.
+ *
+ * The ref identity changes whenever `isLoading` / `hasMore` change, so React
+ * re-runs it: it disconnects the old observer and observes the (still last)
+ * node again. `observe()` immediately reports the current intersection state,
+ * so a page that was already scrolled to the bottom keeps loading once the
+ * previous fetch settles — an IntersectionObserver alone only fires on
+ * transitions and would stall.
  */
 function useInfiniteScroll<T extends HTMLElement = HTMLElement>({
   callback,
@@ -18,24 +23,23 @@ function useInfiniteScroll<T extends HTMLElement = HTMLElement>({
   isLoading,
 }: Props) {
   const observer = useRef<IntersectionObserver | null>(null);
+  const cbRef = useRef(callback);
+  cbRef.current = callback;
 
-  // Latest values without re-creating the ref callback.
-  const state = useRef({ callback, isLoading, hasMore });
-  state.current = { callback, isLoading, hasMore };
-
-  return useCallback((node: T | null) => {
-    observer.current?.disconnect();
-    if (!node) return;
-    observer.current = new IntersectionObserver(
-      (entries) => {
-        const { callback: cb, isLoading: loading, hasMore: more } =
-          state.current;
-        if (entries[0].isIntersecting && !loading && more) cb();
-      },
-      { rootMargin: "200px" }
-    );
-    observer.current.observe(node);
-  }, []);
+  return useCallback(
+    (node: T | null) => {
+      observer.current?.disconnect();
+      if (!node || isLoading || !hasMore) return;
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) cbRef.current();
+        },
+        { rootMargin: "300px" }
+      );
+      observer.current.observe(node);
+    },
+    [isLoading, hasMore]
+  );
 }
 
 export default useInfiniteScroll;

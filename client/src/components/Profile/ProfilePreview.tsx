@@ -35,12 +35,16 @@ const ProfilePreview = memo(
           navigateTo={navigateTo}
           isLoggedIn={isLoggedIn}
         />
-        <Link
-          to={navigateTo}
-          className="text-base font-semibold cursor-pointer"
-        >
-          {user?.name}
-        </Link>
+        {navigateTo ? (
+          <Link
+            to={navigateTo}
+            className="text-base font-semibold cursor-pointer"
+          >
+            {user?.name}
+          </Link>
+        ) : (
+          <span className="text-base font-semibold">{user?.name}</span>
+        )}
       </div>
     );
   }

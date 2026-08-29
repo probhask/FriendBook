@@ -1,5 +1,5 @@
 import { PostContainer, PostShimmer } from "@components/index";
-import useInfiniteScroll from "@hooks/useInfiniteScroll";
+import useWindowInfiniteScroll from "@hooks/useWindowInfiniteScroll";
 import { getPosts } from "@redux/AsyncFunctions/postAsync";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
 import { getAuthData } from "@redux/slice/authSlice";
@@ -32,7 +32,7 @@ const Feed = React.memo(() => {
   const { id } = useParams();
   const userId = id ? id : authUserId;
 
-  const lastPostRef = useInfiniteScroll<HTMLDivElement>({
+  useWindowInfiniteScroll({
     callback: () => {
       dispatch(getPosts({ userId: userId, own: id ? true : false }));
     },
@@ -52,11 +52,10 @@ const Feed = React.memo(() => {
     <>
       {postData && (
         <div className="w-full flex flex-col gap-y-3">
-          {postData.map((post, index) => (
+          {postData.map((post) => (
             <PostContainer
               key={post._id}
               post={post}
-              ref={index === postData.length - 1 ? lastPostRef : undefined}
               showComment={showCommentId === post._id}
               setShowComment={toggleShowComment}
             />

@@ -45,8 +45,9 @@ export const getPosts = createAsyncThunk<
 
     if (own) {
       // Profile view — just this user's posts, newest first.
+      // `_id` is a stable tiebreaker so pages never overlap when _createdAt ties.
       query = `*[_type == 'post' && postedBy._ref == $userId]
-        | order(_createdAt desc) [$startIndex...$endIndex]${projection}`;
+        | order(_createdAt desc, _id) [$startIndex...$endIndex]${projection}`;
       params = { userId, viewerId, startIndex, endIndex };
     } else {
       // Home feed — everyone's posts, but ranked:
@@ -61,7 +62,8 @@ export const getPosts = createAsyncThunk<
         | order(
             (postedBy._ref in $idArray || tagUser[]._ref in $idArray) desc,
             defined(*[_type == 'like' && likeby._ref == $viewerId && post._ref == ^._id][0]) asc,
-            _createdAt desc
+            _createdAt desc,
+            _id
           ) [$startIndex...$endIndex]${projection}`;
       params = { idArray, viewerId, startIndex, endIndex };
     }
