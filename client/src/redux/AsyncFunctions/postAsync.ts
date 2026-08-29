@@ -13,8 +13,9 @@ export const getPosts = createAsyncThunk<
 >("post/getPosts", async ({ userId, own }, { getState }) => {
   const pageNumber = (getState() as RootState).post.pageNumber;
   const limit = (getState() as RootState).post.limit;
+  // Query uses an exclusive-end slice `[startIndex...endIndex]`.
   const startIndex = (pageNumber - 1) * limit;
-  const endIndex = pageNumber * limit - 1;
+  const endIndex = pageNumber * limit;
 
   const projection = `{
     _id,
