@@ -11,6 +11,11 @@ jobs:
     defaults:
       run:
         working-directory: client
+    env:
+      # Public project id — not a secret. Keeps `vite build` / vitest from
+      # failing when no .env is present in CI.
+      VITE_SANITY_PROJECT_ID: us9jlw19
+      VITE_SANITY_DATASET: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

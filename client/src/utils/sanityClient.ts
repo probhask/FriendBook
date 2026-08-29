@@ -10,7 +10,9 @@ import imageUrlBuilder from "@sanity/image-url";
  * (read-only) token — never a write/deploy token.
  */
 export const client = createClient({
-  projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
+  // Fallback keeps module load from throwing when the env isn't configured
+  // (tests, misconfigured deploy) — real queries will just fail clearly.
+  projectId: import.meta.env.VITE_SANITY_PROJECT_ID || "missing-project-id",
   dataset: import.meta.env.VITE_SANITY_DATASET || "production",
   apiVersion: "2024-06-10",
   // CDN caches reads for up to a minute — with it on, your own likes/comments
