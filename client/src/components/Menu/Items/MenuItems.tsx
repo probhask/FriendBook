@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { AiFillHome } from "react-icons/ai";
 import { FaFacebookMessenger, FaUserFriends } from "react-icons/fa";
 import { HiUserAdd } from "react-icons/hi";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 
 const menuTabs: {
   to: string;
@@ -14,6 +15,12 @@ const menuTabs: {
     icons: <AiFillHome />,
     iconStyle: "",
     text: "Home",
+  },
+  {
+    to: "/search",
+    icons: <HiMagnifyingGlass />,
+    iconStyle: "",
+    text: "Search",
   },
   {
     to: "/find-friend",

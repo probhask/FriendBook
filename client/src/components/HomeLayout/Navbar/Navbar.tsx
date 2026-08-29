@@ -1,34 +1,46 @@
 import { AiFillHome, AiOutlineHome, AiOutlineMenu } from "react-icons/ai";
 import { FaFacebookMessenger, FaUserFriends } from "react-icons/fa";
 import { LiaFacebookMessenger } from "react-icons/lia";
-import { ReactNode, useCallback, useMemo, useState } from "react";
-import { NavigationTabs, Search, SmMenu } from "@components/index";
-import { useLocation } from "react-router-dom";
+import { ReactNode, useState } from "react";
+import { NavigationTabs, SmMenu } from "@components/index";
 import { HiOutlineUserAdd, HiUserAdd } from "react-icons/hi";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 import { IoMdPeople } from "react-icons/io";
+import { Link } from "react-router-dom";
 
 const tabs: {
   to: string;
+  label: string;
   activeIcon: ReactNode;
   notActiveIcon: ReactNode;
 }[] = [
   {
     to: "/",
+    label: "Home",
     activeIcon: <AiFillHome />,
     notActiveIcon: <AiOutlineHome />,
   },
   {
+    to: "/search",
+    label: "Search",
+    activeIcon: <HiMagnifyingGlass />,
+    notActiveIcon: <HiMagnifyingGlass />,
+  },
+  {
     to: "/find-friend",
+    label: "Find friends",
     activeIcon: <HiUserAdd />,
     notActiveIcon: <HiOutlineUserAdd />,
   },
   {
     to: "/friends",
+    label: "Friends",
     activeIcon: <FaUserFriends />,
     notActiveIcon: <IoMdPeople />,
   },
   {
     to: "/chat",
+    label: "Messenger",
     activeIcon: <FaFacebookMessenger />,
     notActiveIcon: <LiaFacebookMessenger />,
   },
@@ -36,55 +48,30 @@ const tabs: {
 
 const Navbar = () => {
   const [menu, setMenu] = useState(false);
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const toggleSearchBar = useCallback((val: boolean) => {
-    setShowSearchBar(val);
-  }, []);
-  const location = useLocation();
-  const isProfilePath = useMemo(
-    () => location.pathname.includes("/profile"),
-    [location]
-  );
 
   return (
-    <header className="flex flex-col justify-center md:px-3 sticky top-0 left-0 right-0 z-50 pt-2 md:py-1 gap-y-2 bg-white shadow-sm w-full">
-      {/* sm mode */}
-      <nav aria-label="Main" className="flex flex-col items-center gap-y-2">
-        <div className="flex justify-between items-center justify-self-end   gap-x-2 w-full py-1">
-          <h1
-            className={` pl-1 text-blue-600 font-extrabold text-xl sm:text-2xl font-serif  md:flex-1 max-w-[240px] xl:max-w-[300px] ${
-              showSearchBar && "hidden md:block"
-            }`}
-          >
-            friendsBook
-          </h1>
+    <header className="sticky top-0 left-0 right-0 z-50 flex items-center gap-x-2 bg-white px-3 py-2 shadow-sm">
+      <Link
+        to="/"
+        className="shrink-0 font-serif text-xl font-extrabold text-blue-600 sm:text-2xl"
+      >
+        friendsBook
+      </Link>
 
-          <div className="relative flex md:flex-[3] items-center  justify-end md:justify-evenly  gap-x-1 sm:gap-x-3 w-full h-full ">
-            <div className="md:h-8 w-full h-full overflow-hidden flex justify-evenly md:max-w-[500px] lg:max-w-[600px] xl:max-w-[700px] ">
-              <Search
-                showSearchBar={showSearchBar}
-                toggleSearchBar={toggleSearchBar}
-              />
-            </div>
-          </div>
-          <div
-            className={`flex justify-end md:justify-evenly md:flex-1 md:hidden ${
-              showSearchBar && "hidden "
-            }`}
-          >
-            <button
-              type="button"
-              aria-label="Open menu"
-              aria-expanded={menu}
-              className="cursor-pointer hover:bg-slate-600 hover:text-white px-1 py-0.5 md:hidden"
-              onClick={() => setMenu(true)}
-            >
-              <AiOutlineMenu className="text-[25px]" />
-            </button>
-          </div>
-        </div>
-        {!isProfilePath && !showSearchBar && <NavigationTabs tabs={tabs} />}
+      <nav aria-label="Main" className="flex flex-1 justify-center">
+        <NavigationTabs tabs={tabs} />
       </nav>
+
+      <button
+        type="button"
+        aria-label="Open menu"
+        aria-expanded={menu}
+        className="shrink-0 rounded-md p-1 text-[25px] text-gray-600 hover:bg-gray-100 md:hidden"
+        onClick={() => setMenu(true)}
+      >
+        <AiOutlineMenu />
+      </button>
+
       {menu && <SmMenu menuStatus={menu} closeMenu={() => setMenu(false)} />}
     </header>
   );

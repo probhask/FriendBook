@@ -4,33 +4,35 @@ import { NavLink } from "react-router-dom";
 type Props = {
   tabs: {
     to: string;
+    label: string;
     activeIcon: ReactNode;
     notActiveIcon: ReactNode;
   }[];
 };
 
-const isNotActiveStyle =
-  "  flex justify-center items-center size-[35px] sm:size-[40px] pb-2 px-1";
-
-const isActiveStyle =
-  " flex justify-center items-center size-[35px] sm:size-[40px] pb-2 px-1 text-blue-600 border-b-2 border-b-blue-600";
+const base =
+  "flex items-center justify-center rounded-lg px-3 py-1.5 text-2xl transition-colors";
 
 const NavigationTabs = React.memo(({ tabs }: Props) => {
   return (
-    <div className="flex md:hidden justify-center items-center text-gray-400 text-2xl md:text-3xl flex-[2] w-full">
-      <div className="flex justify-evenly gap-x-4 sm:gap-x-8 md:gap-x-8 lg:gap-x-16 w-full">
-        {tabs.map((tab, index) => (
-          <NavLink
-            to={tab.to}
-            key={index}
-            className={({ isActive }) =>
-              isActive ? isActiveStyle : isNotActiveStyle
-            }
-          >
-            {({ isActive }) => (isActive ? tab.activeIcon : tab.notActiveIcon)}
-          </NavLink>
-        ))}
-      </div>
+    <div className="flex w-full max-w-md items-center justify-between sm:justify-center sm:gap-x-2">
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          end={tab.to === "/"}
+          aria-label={tab.label}
+          className={({ isActive }) =>
+            `${base} ${
+              isActive
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            }`
+          }
+        >
+          {({ isActive }) => (isActive ? tab.activeIcon : tab.notActiveIcon)}
+        </NavLink>
+      ))}
     </div>
   );
 });

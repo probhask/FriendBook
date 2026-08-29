@@ -12,14 +12,15 @@ export const getPosts = createAsyncThunk<
   { userId: string; own?: boolean }
 >("post/getPosts", async ({ userId, own }, { getState }) => {
   const state = getState() as RootState;
-  const pageNumber = state.post.pageNumber;
   const limit = state.post.limit;
   // The logged-in user — always used for "did *I* like this", independent of
   // whose feed/profile is being viewed.
   const viewerId = state.auth.data._id;
-  // Query uses an exclusive-end slice `[startIndex...endIndex]`.
-  const startIndex = (pageNumber - 1) * limit;
-  const endIndex = pageNumber * limit;
+  // Page from how many posts we already hold. Self-correcting: two concurrent
+  // fetches request the same window, the duplicate is dropped, and the next
+  // fetch resumes from the real length — no skipped or repeated pages.
+  const startIndex = state.post.data.length;
+  const endIndex = startIndex + limit;
 
   const projection = `{
     _id,
@@ -74,9 +75,6 @@ export const getPosts = createAsyncThunk<
   } catch (error) {
     throw new Error(isInstanceOfError(error, "error fetching posts"));
   }
-}, {
-  // Never run two feed fetches at once — concurrent pages overlap and skip.
-  condition: (_arg, { getState }) => !(getState() as RootState).post.loading,
 });
 
 export type CreatePostArgs = {

@@ -31,7 +31,7 @@ const SearchPage = () => {
 
   useEffect(() => {
     setParams(debounced ? { q: debounced } : {}, { replace: true });
-    if (debounced.length < 2) {
+    if (debounced.length < 1) {
       dispatch(clearSearch());
       return;
     }
@@ -64,7 +64,7 @@ const SearchPage = () => {
 
         {!loading && error && <ErrorState message={error} onRetry={retry} />}
 
-        {!loading && !error && debounced.length >= 2 && results.length === 0 && (
+        {!loading && !error && debounced.length >= 1 && results.length === 0 && (
           <EmptyState
             icon={<FiUserX />}
             title="No people found"
@@ -72,11 +72,11 @@ const SearchPage = () => {
           />
         )}
 
-        {!loading && !error && debounced.length < 2 && (
+        {!loading && !error && debounced.length < 1 && (
           <EmptyState
             icon={<HiSearch />}
-            title="Find friends"
-            description="Type at least 2 characters to search by name or city."
+            title="Find people"
+            description="Search for friends by name or city."
           />
         )}
 

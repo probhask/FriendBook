@@ -13,8 +13,6 @@ export { default as NavigationTabs } from "./HomeLayout/Navbar/NavigationTabs";
 // smmenu
 export { default as SmMenu } from "./HomeLayout/Navbar/SmMenu/SmMenu";
 
-// navbar/search
-export { default as Search } from "./HomeLayout/Navbar/Search/Search";
 export { default as LeftBar } from ".//HomeLayout/LeftBar/LeftBar";
 export { default as RightBar } from "./HomeLayout/RightBar/RightBar";
 

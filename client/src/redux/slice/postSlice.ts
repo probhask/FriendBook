@@ -57,22 +57,14 @@ const postSlice = createSlice({
       })
       .addCase(getPosts.fulfilled, (state, action) => {
         state.hasMore = action.payload.length >= state.limit;
-        if (state.pageNumber === 1) {
-          state.data = action.payload;
-        } else {
-          // Guard against any page overlap.
-          const seen = new Set(state.data.map((p) => p._id));
-          state.data.push(
-            ...action.payload.filter((p) => !seen.has(p._id))
-          );
-        }
-        state.pageNumber += 1;
+        const seen = new Set(state.data.map((p) => p._id));
+        state.data.push(...action.payload.filter((p) => !seen.has(p._id)));
         state.loading = false;
         state.error = "";
       })
       .addCase(getPosts.rejected, (state, action) => {
-        if (action.meta.aborted || action.meta.condition) return;
         state.loading = false;
+        if (action.meta.aborted) return;
         state.error = action.error.message || "error in getting post";
         state.hasMore = false;
       });
