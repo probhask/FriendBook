@@ -114,13 +114,14 @@ const Search = React.memo(({ showSearchBar, toggleSearchBar }: Props) => {
               onSubmit={handleSearchSubmit}
             >
               <input
-                type="text"
+                type="search"
                 value={searchTerm}
                 onChange={handleInputChange}
+                placeholder="Search people…"
+                aria-label="Search people"
                 className="outline-none border-l-[2.3px] border-gray-100 focus-within:border-gray-200  px-2 w-full py-1.5 bg-transparent"
-                onKeyUp={handleKey}
+                onKeyDown={handleKey}
                 onFocus={showResultSection}
-                // onBlur={hideResultSection}
               />
             </form>
           </div>

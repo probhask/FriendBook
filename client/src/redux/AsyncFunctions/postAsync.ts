@@ -74,6 +74,9 @@ export const getPosts = createAsyncThunk<
   } catch (error) {
     throw new Error(isInstanceOfError(error, "error fetching posts"));
   }
+}, {
+  // Never run two feed fetches at once — concurrent pages overlap and skip.
+  condition: (_arg, { getState }) => !(getState() as RootState).post.loading,
 });
 
 export type CreatePostArgs = {

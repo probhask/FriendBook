@@ -71,10 +71,10 @@ const postSlice = createSlice({
         state.error = "";
       })
       .addCase(getPosts.rejected, (state, action) => {
+        if (action.meta.aborted || action.meta.condition) return;
         state.loading = false;
         state.error = action.error.message || "error in getting post";
         state.hasMore = false;
-        // console.log(state.error);
       });
 
     builder

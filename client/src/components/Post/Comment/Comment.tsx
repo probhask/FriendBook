@@ -91,7 +91,7 @@ const Comment = React.memo(({ postId }: { postId: string }) => {
       {!commentLoading && commentData.length === 0 && (
         <div className="mx-auto text-sm font-semibold text-gray-400">
           {" "}
-          no commnets{" "}
+          No comments yet{" "}
         </div>
       )}
 

@@ -30,41 +30,44 @@ const Feed = React.memo(() => {
   };
 
   const { id } = useParams();
-  const userId = id ? id : authUserId;
+  const userId = id || authUserId;
+  const own = Boolean(id);
 
   useWindowInfiniteScroll({
     callback: () => {
-      dispatch(getPosts({ userId: userId, own: id ? true : false }));
+      if (userId) dispatch(getPosts({ userId, own }));
     },
     hasMore: postHasMore,
     isLoading: postLoading,
   });
 
   useEffect(() => {
+    // Wait until we actually know whose feed to load — otherwise a first
+    // fetch with an empty id races the real one and corrupts pagination.
+    if (!userId) return;
     window.scroll(0, 0);
     dispatch(resetFeed());
-    const promise = dispatch(
-      getPosts({ userId: userId, own: id ? true : false })
-    );
+    const promise = dispatch(getPosts({ userId, own }));
     return () => promise.abort();
-  }, [dispatch, id, userId]);
+  }, [dispatch, userId, own]);
+
   return (
     <>
-      {postData && (
-        <div className="w-full flex flex-col gap-y-3">
-          {postData.map((post) => (
-            <PostContainer
-              key={post._id}
-              post={post}
-              showComment={showCommentId === post._id}
-              setShowComment={toggleShowComment}
-            />
-          ))}
-        </div>
-      )}
+      <div className="w-full flex flex-col gap-y-3">
+        {postData.map((post) => (
+          <PostContainer
+            key={post._id}
+            post={post}
+            showComment={showCommentId === post._id}
+            setShowComment={toggleShowComment}
+          />
+        ))}
+      </div>
       {postLoading && <PostShimmer />}
       {!postLoading && postData.length === 0 && (
-        <div className="mt-5 mb-2 text-center">no post available</div>
+        <div className="mt-5 mb-2 text-center text-gray-500">
+          No posts yet
+        </div>
       )}
     </>
   );
