@@ -34,18 +34,18 @@ const postSlice = createSlice({
         state.error = "";
       })
       .addCase(getStories.fulfilled, (state, action) => {
-        state.hasMore =
-          action.payload.length > 0 || action.payload.length >= state.limit;
-        state.data.push(...action.payload);
+        state.hasMore = action.payload.length >= state.limit;
+        const seen = new Set(state.data.map((s) => s._id));
+        state.data.push(...action.payload.filter((s) => !seen.has(s._id)));
         state.pageNumber += 1;
         state.loading = false;
         state.error = "";
       })
       .addCase(getStories.rejected, (state, action) => {
+        if (action.meta.aborted) return;
         state.loading = false;
         state.hasMore = false;
         state.error = action.error.message || "error in getting stories";
-        console.log(state.error);
       });
 
     builder
@@ -61,7 +61,6 @@ const postSlice = createSlice({
       .addCase(createStory.rejected, (state, action) => {
         state.creatingStories = false;
         state.error = action.error.message || "error in creating story";
-        console.log(state.error);
       });
   },
 });

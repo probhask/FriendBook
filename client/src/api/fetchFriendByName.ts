@@ -1,5 +1,6 @@
 import { Friend } from "../types";
 import { client } from "../utils/sanityClient";
+import isInstanceOfError from "@utils/isInstanceOfError";
 
 export const fetchFriends = async ({
   currentUserId,
@@ -28,20 +29,11 @@ export const fetchFriends = async ({
       taggedUserIds,
       debouncedSearch: `${debouncedSearch}*`,
     };
-    console.log(params);
-
     const sanityResult = await client.fetch<Friend[]>(query, params);
-    const friendShip = sanityResult
-      .filter(
-        (result) => result.friend !== null && typeof result.friend === "object"
-      )
-      .map((result) => result);
-
-    console.log("friend", friendShip);
-
-    return friendShip;
+    return sanityResult.filter(
+      (result) => result.friend !== null && typeof result.friend === "object"
+    );
   } catch (error) {
-    console.log(error);
-    throw new Error(error as string);
+    throw new Error(isInstanceOfError(error, "error searching friends"));
   }
 };

@@ -41,7 +41,6 @@ const friendSlice = createSlice({
       .addCase(getFriendsList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "error in getting friends List";
-        console.log(action.error);
       });
 
     builder
@@ -57,7 +56,6 @@ const friendSlice = createSlice({
       .addCase(acceptRequest.rejected, (state, action) => {
         state.acceptRequestLoading = "";
         state.error = action.error.message || "error in accepting request";
-        console.log(action.error);
       });
 
     builder
@@ -73,7 +71,6 @@ const friendSlice = createSlice({
       .addCase(unFriend.rejected, (state, action) => {
         state.unFriendLoading = "";
         state.error = action.error.message || "error in unfriending";
-        console.log(action.error);
       });
   },
 });

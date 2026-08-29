@@ -54,16 +54,19 @@ const Menu = React.memo(({ smClose }: Props) => {
           </NavLink>
         ))}
 
-        <div
-          className="flex w-full rounded-lg cursor-pointer  hover:bg-gray-400 py-5 pl-8 md:pl-4"
-          onClick={() => dispatch(logout())}
+        <button
+          type="button"
+          className="flex w-full items-center rounded-lg cursor-pointer hover:bg-gray-400 py-5 pl-8 md:pl-4 text-left"
+          onClick={() => {
+            smClose?.();
+            dispatch(logout());
+          }}
         >
-          <span className={`text-[1.2rem] mr-2`}>
-            {" "}
+          <span className="text-[1.2rem] mr-2">
             <IoLogOut />
           </span>
           <span>Logout</span>
-        </div>
+        </button>
       </div>
     </div>
   );

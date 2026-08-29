@@ -1,4 +1,5 @@
 import { InputField, PasswordField } from "../components";
+import Seo from "@components/Seo/Seo";
 import { TfiEmail } from "react-icons/tfi";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -30,10 +31,15 @@ const Login = () => {
         .required(),
     }),
 
-    onSubmit: (values) => {
-      dispatch(
-        loginAuth({ email: values.email, password: values.password })
-      ).then(() => navigate("/"));
+    onSubmit: async (values) => {
+      try {
+        await dispatch(
+          loginAuth({ email: values.email, password: values.password })
+        ).unwrap();
+        navigate("/", { replace: true });
+      } catch {
+        /* error toast is raised in the auth slice */
+      }
     },
   });
 
@@ -44,6 +50,10 @@ const Login = () => {
   // }, [isLoggedIn]);
   return (
     <div className="w-full h-full ">
+      <Seo
+        title="Log in"
+        description="Log in to FriendBook to share posts and chat with friends."
+      />
       <div className="flex justify-evenly items-start h-full mt-5 px-3 sm:px-5 md:px-10 ">
         <div className=" hidden md:flex justify-center w-full h-full">
           <div className="h-full mt-8">
@@ -53,21 +63,6 @@ const Login = () => {
 
         <div className="flex flex-col gap-y-5 px-1 w-full">
           {/* login regostor tab button */}
-
-          <div className="self-end flex gap-x-4">
-            <button
-              className="px-2 py-1 bg-black text-white rounded-lg mt-2 text-xs w-20 h-7 font-semibold hover:shadow-md"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-            <button
-              className="px-2 py-1 bg-blue-600 text-white rounded-lg mt-2 text-xs w-20 h-7 font-semibold hover:shadow-md"
-              onClick={() => navigate("/register")}
-            >
-              Register
-            </button>
-          </div>
 
           <div className="flex justify-center mt-8 w-full">
             <div className="flex flex-col gap-y-3 w-[95%] sm:w-[90%] md:w-[80%] lg:w-[75%]">

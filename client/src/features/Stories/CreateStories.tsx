@@ -7,6 +7,7 @@ import React, {
   DragEvent,
   FormEvent,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -14,6 +15,9 @@ import { AiFillCloseCircle } from "react-icons/ai";
 import { IoMdCloudUpload } from "react-icons/io";
 import { RiErrorWarningLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
+import Seo from "@components/Seo/Seo";
+import { ACCEPT_IMAGE, SUPPORTED_FORMAT } from "@utils/supportedFormat";
+import toast from "react-hot-toast";
 
 const CreateStories = React.memo(() => {
   const [isDragging, setIsDragging] = useState(false);
@@ -29,32 +33,48 @@ const CreateStories = React.memo(() => {
   const selectFile = () => {
     fileInputRef.current && fileInputRef.current.click();
   };
-  const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      // Generate image preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+
+  const pickFile = useCallback((file: File | undefined) => {
+    if (!file) return;
+    setSelectedFile(file);
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   }, []);
-  const handleFileSubmit = (e: FormEvent<HTMLFormElement>) => {
+
+  useEffect(
+    () => () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    },
+    [imagePreview]
+  );
+
+  const handleFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => pickFile(e.target.files?.[0]),
+    [pickFile]
+  );
+
+  const handleFileSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (selectedFile) {
-      dispatch(createStory({ media: selectedFile }))
-        .catch((error) => setError(error))
-        .finally(() => navigate("/"));
+    if (!selectedFile) return;
+    if (!SUPPORTED_FORMAT.includes(selectedFile.type)) {
+      setError("Unsupported image format");
+      return;
+    }
+    try {
+      await dispatch(createStory({ media: selectedFile })).unwrap();
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "could not create story");
+      toast.error("Could not create story");
     }
   };
 
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    setSelectedFile(files[0]);
+    pickFile(e.dataTransfer.files[0]);
   };
   const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
@@ -67,6 +87,7 @@ const CreateStories = React.memo(() => {
   };
   return (
     <div className="select-none w-full h-full bg-white px-2 md:px-5 pt-5">
+      <Seo title="Create story" noIndex />
       <form
         onSubmit={handleFileSubmit}
         className=" flex flex-col gap-y-1 text-gray-500 focus-within:text-gray-700"
@@ -95,8 +116,9 @@ const CreateStories = React.memo(() => {
             </span>
             <input
               id="stories"
-              name="string"
+              name="stories"
               type="file"
+              accept={ACCEPT_IMAGE}
               onChange={handleFileChange}
               className="bg-transparent outline-none w-0"
               ref={fileInputRef}
@@ -107,14 +129,21 @@ const CreateStories = React.memo(() => {
           <div className="relative mb-5 max-h-[300px] max-w-full overflow-hidden">
             <label className="font-bold text-gray-500">Image Preview</label>
             <img
-              src={imagePreview || URL.createObjectURL(selectedFile)}
-              alt="Preview"
+              src={imagePreview || undefined}
+              alt="Selected story preview"
               className="max-w-full max-h-full mt-2 object-contain"
             />
-            <AiFillCloseCircle
+            <button
+              type="button"
+              aria-label="remove selected image"
               className="absolute top-2 right-2 cursor-pointer"
-              onClick={() => setSelectedFile(null)}
-            />
+              onClick={() => {
+                setSelectedFile(null);
+                setImagePreview(null);
+              }}
+            >
+              <AiFillCloseCircle />
+            </button>
           </div>
         )}
         <Button
@@ -127,7 +156,7 @@ const CreateStories = React.memo(() => {
       {error && (
         <div className="px-2 text-xs font-semibold text-red-600 flex items-center gap-x-2 w-full py-0.5">
           <RiErrorWarningLine />
-          error
+          {error}
         </div>
       )}
     </div>

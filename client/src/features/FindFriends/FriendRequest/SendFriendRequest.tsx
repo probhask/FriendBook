@@ -26,7 +26,7 @@ const SendFriendRequest = memo(() => {
   useEffect(() => {
     const promise = dispatch(getSendFriendRequestList());
     return () => promise.abort();
-  }, []);
+  }, [dispatch]);
   return (
     <div className="grid sm:grid-cols-2  gap-x-2 gap-y-2 py-1.5 px-0.5">
       {sendRequestLoading &&
@@ -58,16 +58,10 @@ const SendFriendRequest = memo(() => {
             />
           </div>
         ))}
-      {!sendRequestLoading && (
-        <div
-          className={`my-5 text-center mx-auto text-sm font-semibold w-full${
-            error ? "text-red-500" : "text-gray-500"
-          }`}
-        >
-          {sendFriendRequest && sendFriendRequest.length === 0 && !error
-            ? " No suggestions"
-            : `${error}`}
-        </div>
+      {!sendRequestLoading && sendFriendRequest.length === 0 && (
+        <p className="col-span-full my-6 text-center text-sm text-gray-500">
+          {error || "You haven't sent any friend requests."}
+        </p>
       )}
     </div>
   );

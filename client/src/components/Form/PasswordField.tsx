@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, FocusEvent, useState } from "react";
 import { AiFillEye, AiFillEyeInvisible, AiOutlineLock } from "react-icons/ai";
 import { RiErrorWarningLine } from "react-icons/ri";
 
@@ -7,7 +7,7 @@ type Props = {
   placeHolder: string;
   value: string | number;
   onchange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onBlur: (e: any) => void;
+  onBlur: (e: FocusEvent<HTMLInputElement>) => void;
   error: string | undefined;
 };
 

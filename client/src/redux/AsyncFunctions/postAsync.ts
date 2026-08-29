@@ -5,42 +5,69 @@ import getFriendsIdsList from "@api/getFriendsIdsList";
 import isInstanceOfError from "@utils/isInstanceOfError";
 import { client } from "@utils/sanityClient";
 import { uploadImageToSanity } from "@utils/uploadImageToSanity";
-import { v4 as uuidv4 } from "uuid";
+import { callApi } from "@utils/api";
 
 export const getPosts = createAsyncThunk<
   PostsType[],
   { userId: string; own?: boolean }
 >("post/getPosts", async ({ userId, own }, { getState }) => {
-  const pageNumber = (getState() as RootState).post.pageNumber;
-  const limit = (getState() as RootState).post.limit;
-  const startIndex = (pageNumber - 1) * limit;
-  const endIndex = pageNumber * limit - 1;
+  const state = getState() as RootState;
+  const limit = state.post.limit;
+  // The logged-in user — always used for "did *I* like this", independent of
+  // whose feed/profile is being viewed.
+  const viewerId = state.auth.data._id;
+  // Page from how many posts we already hold. Self-correcting: two concurrent
+  // fetches request the same window, the duplicate is dropped, and the next
+  // fetch resumes from the real length — no skipped or repeated pages.
+  const startIndex = state.post.data.length;
+  const endIndex = startIndex + limit;
 
-  try {
-    let idArray = [userId];
-    if (!own) {
-      const friendsIdsArray = await getFriendsIdsList(userId);
-      idArray = [...friendsIdsArray, userId];
-    }
-
-    const query = `
-  *[_type == 'post' && (
-    postedBy._ref in $idArray ||
-    tagUser[]._ref in $idArray
-  )]
-  | order(_createdAt desc) [$startIndex...$endIndex]{
+  const projection = `{
     _id,
     postDesc,
     'image': image.asset->url,
+    mediaType,
+    'video': video.asset->url,
+    'audio': audio.asset->url,
+    audioMeta,
     postedBy->{_id, name, 'profileImage': profileImage.asset->url, isLoggedIn},
     'tagUser': tagUser[0]->{_id,name},
     "totalTagUser":count(tagUser),
-    'LikedInfo':*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]{_id},
-    'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]),
+    "likeCount": count(*[_type == 'like' && post._ref == ^._id]),
+    "commentCount": count(*[_type == 'comment' && post._ref == ^._id]),
+    'LikedInfo':*[_type == 'like' && (likeby._ref == $viewerId && post._ref == ^._id)][0]{_id},
+    'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $viewerId && post._ref == ^._id)][0]),
     _createdAt
-  }
-`;
-    const params = { idArray, startIndex, endIndex, userId };
+  }`;
+
+  try {
+    let query: string;
+    let params: Record<string, unknown>;
+
+    if (own) {
+      // Profile view — just this user's posts, newest first.
+      // `_id` is a stable tiebreaker so pages never overlap when _createdAt ties.
+      query = `*[_type == 'post' && postedBy._ref == $userId]
+        | order(_createdAt desc, _id) [$startIndex...$endIndex]${projection}`;
+      params = { userId, viewerId, startIndex, endIndex };
+    } else {
+      // Home feed — everyone's posts, but ranked:
+      //   1. friends' posts + posts you're tagged in, before strangers'
+      //   2. posts you haven't liked yet, before ones you have
+      //   3. newest first
+      // A failed friends lookup shouldn't blank the whole feed — fall back to
+      // "no friends" ranking (everyone still shows, just not friend-prioritised).
+      const friendsIdsArray = await getFriendsIdsList(userId).catch(() => []);
+      const idArray = [...friendsIdsArray, userId];
+      query = `*[_type == 'post']
+        | order(
+            (postedBy._ref in $idArray || tagUser[]._ref in $idArray) desc,
+            defined(*[_type == 'like' && likeby._ref == $viewerId && post._ref == ^._id][0]) asc,
+            _createdAt desc,
+            _id
+          ) [$startIndex...$endIndex]${projection}`;
+      params = { idArray, viewerId, startIndex, endIndex };
+    }
 
     const sanityResult = await client.fetch<PostsType[]>(query, params);
 
@@ -49,72 +76,49 @@ export const getPosts = createAsyncThunk<
     throw new Error(isInstanceOfError(error, "error fetching posts"));
   }
 });
-export const createPost = createAsyncThunk<
-  PostsType,
-  {
-    postDesc: string;
-    image: File;
-    tagUser: string[]; // Array of user IDs to tag
-  },
-  { state: RootState }
->("posts/createPost", async ({ image, postDesc, tagUser }, thunkAPI) => {
-  try {
-    // console.log(image, postDesc, tagUser);
-    const currentUSerId = (thunkAPI.getState() as RootState).auth.data._id;
 
-    // Usage of uploadImageToSanity within the async thunk
-    const imageId = await uploadImageToSanity(image);
-    const newPost = {
-      _type: "post",
-      postDesc,
-      image: {
-        _type: "image",
-        asset: {
-          _ref: imageId, // Replace with the actual image asset ID
-          _type: "reference",
-        },
-      },
-      tagUser: tagUser.map((userId) => ({
-        _type: "reference",
-        _ref: userId,
-        _key: uuidv4(),
-      })),
-      postedBy: { _type: "reference", _ref: currentUSerId },
-    };
+export type CreatePostArgs = {
+  postDesc: string;
+  tagUser: string[];
+  mediaType: "image" | "video" | "audioImage";
+  image?: File;
+  video?: File;
+  audio?: File;
+  audioMeta?: { trackName?: string; startSec?: number; endSec?: number };
+};
 
-    // Call Sanity client to create the document
-    const createdPost = await client.create(newPost);
+export const createPost = createAsyncThunk<PostsType, CreatePostArgs>(
+  "posts/createPost",
+  async ({ image, video, audio, audioMeta, postDesc, tagUser, mediaType }) => {
+    try {
+      const payload: Record<string, unknown> = { postDesc, tagUser, mediaType };
 
-    const query = `*[_type=='post'&& _id==$postId][0]{
-        _id,
-    postDesc,
-    'image': image.asset->url,
-    postedBy->{_id, name, 'profileImage': profileImage.asset->url, isLoggedIn},
-    'tagUser': tagUser[0]->{_id,name},
-    "totalTagUser":count(tagUser),
-    'LikedInfo':*[_type == 'like' && (likeby._ref == $currentUSerId && post._ref == ^._id)][0]{_id},
-    'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $currentUSerId && post._ref == ^._id)][0]),
-    _createdAt}`;
-    const params = { postId: createdPost._id, currentUSerId };
+      if (mediaType === "video") {
+        if (!video) throw new Error("a video file is required");
+        payload.videoAssetId = await uploadImageToSanity(video, "file");
+      } else {
+        if (!image) throw new Error("an image is required");
+        payload.imageAssetId = await uploadImageToSanity(image, "image");
+        if (mediaType === "audioImage") {
+          if (!audio) throw new Error("an audio track is required");
+          payload.audioAssetId = await uploadImageToSanity(audio, "file");
+          payload.audioMeta = audioMeta || {};
+        }
+      }
 
-    const sanityResult = await client.fetch<PostsType>(query, params);
-
-    return sanityResult;
-  } catch (error) {
-    throw new Error(isInstanceOfError(error, "error creating post"));
+      return await callApi<PostsType>("createPost", payload);
+    } catch (error) {
+      throw new Error(isInstanceOfError(error, "error creating post"));
+    }
   }
-});
+);
 
 export const deletePost = createAsyncThunk<string, { postId: string }>(
   "post/deletePost",
   async ({ postId }) => {
     try {
-      const sanityResult = await client.delete(postId);
-
-      if (sanityResult) {
-        return postId;
-      }
-      throw new Error("error deleting post");
+      await callApi("deletePost", { postId });
+      return postId;
     } catch (error) {
       throw new Error(isInstanceOfError(error, "error deleting post"));
     }
@@ -123,40 +127,25 @@ export const deletePost = createAsyncThunk<string, { postId: string }>(
 
 export const likePost = createAsyncThunk<string, { postId: string }>(
   "post/likePost",
-  async ({ postId }, { getState }): Promise<string> => {
-    const currentUserId = (getState() as RootState).auth.data._id;
+  async ({ postId }) => {
     try {
-      const postDoc = {
-        _type: "like",
-        likeby: {
-          _type: "reference",
-          _ref: currentUserId,
-        },
-        post: {
-          _type: "reference",
-          _ref: postId,
-        },
-      };
-
-      const sanityResult = await client.create(postDoc);
-
-      return sanityResult._id;
+      const { likeId } = await callApi<{ likeId: string }>("likePost", {
+        postId,
+      });
+      return likeId;
     } catch (error) {
       throw new Error(isInstanceOfError(error, "error liking post"));
     }
   }
 );
+
 export const unlikePost = createAsyncThunk<
   string,
   { likeId: string; postId: string }
->("post/unlikePost", async ({ likeId }): Promise<string> => {
+>("post/unlikePost", async ({ likeId }) => {
   try {
-    const sanityResult = await client.delete(likeId);
-    if (sanityResult) {
-      return likeId;
-    } else {
-      throw new Error("Like document not found");
-    }
+    await callApi("unlikePost", { likeId });
+    return likeId;
   } catch (error) {
     throw new Error(isInstanceOfError(error, "error unliking post"));
   }

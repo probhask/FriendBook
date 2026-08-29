@@ -1,55 +1,91 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ProfileInfoShimmer, ProfilePreview } from "@components/index";
+import { Link } from "react-router-dom";
+import { FiMessageCircle } from "react-icons/fi";
+import {
+  EmptyState,
+  ErrorState,
+  ProfileImage,
+  RowsSkeleton,
+} from "@components/index";
+import Seo from "@components/Seo/Seo";
 import { getConversation } from "@redux/AsyncFunctions/conversationAsync";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
 import {
   getConversationData,
+  getConversationError,
   getConversationLoading,
 } from "@redux/slice/conversationSlice";
+import { timeAgo } from "@utils/timeAgo";
 
 const ConversationPreview = React.memo(() => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const conversationData = useAppSelector(getConversationData);
-  const conversationLoading = useAppSelector(getConversationLoading);
+  const conversations = useAppSelector(getConversationData);
+  const loading = useAppSelector(getConversationLoading);
+  const error = useAppSelector(getConversationError);
+
   useEffect(() => {
     const promise = dispatch(getConversation());
     return () => promise.abort();
-  }, []);
+  }, [dispatch]);
 
   return (
-    <div className="flex flex-col w-full gap-y-5 px-2 py-3">
-      <h1 className="text-center font-bold mb-3 uppercase">Messenger</h1>
-      {/* search bar */}
-      {/* profile courselS */}
-      {/* conversation preview */}
-      {conversationData.map((conversation, index) => {
-        return (
-          <div
-            key={index}
-            className="cursor-pointer hover:bg-gray-100 rounded-lg flex justify-between items-center"
-            onClick={() => navigate(`/chat/messenger/${conversation._id}`)}
-          >
-            <ProfilePreview
-              user={conversation.partner}
-              imageSize={40}
-              navigateTo={""}
-              isLoggedIn={conversation.partner.isLoggedIn}
-              padding={true}
-            />
-            {conversation.partner.isLoggedIn && (
-              <div>
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+    <div className="flex flex-col w-full px-2 py-3">
+      <Seo title="Messenger" noIndex />
+      <h1 className="mb-3 text-center text-lg font-bold uppercase tracking-wide text-gray-700">
+        Messenger
+      </h1>
+
+      {loading && conversations.length === 0 && <RowsSkeleton rows={6} />}
+
+      {!loading && error && conversations.length === 0 && (
+        <ErrorState
+          message={error}
+          onRetry={() => dispatch(getConversation())}
+        />
+      )}
+
+      {!loading && !error && conversations.length === 0 && (
+        <EmptyState
+          icon={<FiMessageCircle />}
+          title="No conversations yet"
+          description="Message a friend from their profile or the Friends page to start chatting."
+        />
+      )}
+
+      <ul className="flex flex-col">
+        {conversations.map((c) => (
+          <li key={c._id}>
+            <Link
+              to={`/chat/messenger/${c._id}`}
+              className="flex items-center gap-x-3 rounded-lg px-2 py-2.5 hover:bg-gray-100"
+            >
+              <ProfileImage
+                size={48}
+                navigateTo=""
+                userProfileImage={c.partner?.profileImage}
+                isLoggedIn={c.partner?.isLoggedIn}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-x-2">
+                  <p className="truncate font-semibold text-gray-800">
+                    {c.partner?.name}
+                  </p>
+                  {c.lastMessage?._createdAt && (
+                    <span className="shrink-0 text-[11px] text-gray-400">
+                      {timeAgo(c.lastMessage._createdAt)}
+                    </span>
+                  )}
+                </div>
+                <p className="truncate text-sm text-gray-500">
+                  {c.lastMessage
+                    ? `${c.lastMessage.fromMe ? "You: " : ""}${c.lastMessage.message}`
+                    : "No messages yet"}
+                </p>
               </div>
-            )}
-          </div>
-        );
-      })}
-      {conversationLoading &&
-        [1, 2, 3, 4].map((list) => {
-          return <ProfileInfoShimmer key={list} />;
-        })}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 });

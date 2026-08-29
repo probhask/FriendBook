@@ -13,10 +13,20 @@ export type DetailUser = {
   city: string;
 };
 // "_createdAt": "2024-06-17T20:45:52.453744684Z",
+export type MediaType = "image" | "video" | "audioImage";
+
+export type AudioMeta = {
+  trackName?: string;
+  startSec?: number;
+  endSec?: number;
+};
+
 export type StoriesType = {
   _id: string;
   _createdAt: string;
   media: string;
+  mediaType?: MediaType;
+  video?: string | null;
   postedBy: User;
 };
 export type Like = {
@@ -27,9 +37,15 @@ export type PostsType = {
   _id: string;
   postDesc: string;
   image: string;
+  mediaType?: MediaType;
+  video?: string | null;
+  audio?: string | null;
+  audioMeta?: AudioMeta | null;
   postedBy: User;
   tagUser: { _id: string; name: string } | null;
   totalTagUser: number;
+  likeCount: number;
+  commentCount: number;
   LikedInfo: Like | null;
   isLikedByUser: boolean;
   _createdAt: string;
@@ -70,6 +86,11 @@ export type Groups = {
 export type Conversation = {
   _id: string;
   partner: User;
+  lastMessage?: {
+    message: string;
+    _createdAt: string;
+    fromMe: boolean;
+  } | null;
   _createdAt: string;
 };
 export type RawConversation = {

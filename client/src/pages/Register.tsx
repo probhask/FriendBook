@@ -1,4 +1,5 @@
 import { InputField, PasswordField } from "../components";
+import Seo from "@components/Seo/Seo";
 import { TfiEmail } from "react-icons/tfi";
 import { IoPersonOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
@@ -40,14 +41,19 @@ const Register = () => {
         .oneOf([Yup.ref("password")], "Password must match"),
     }),
 
-    onSubmit: (values) => {
-      dispatch(
-        createUser({
-          email: values.email,
-          password: values.password,
-          name: values.name,
-        })
-      ).then(() => navigate("/"));
+    onSubmit: async (values) => {
+      try {
+        await dispatch(
+          createUser({
+            email: values.email,
+            password: values.password,
+            name: values.name,
+          })
+        ).unwrap();
+        navigate("/", { replace: true });
+      } catch {
+        /* error toast is raised in the auth slice */
+      }
     },
   });
   // useEffect(() => {
@@ -58,6 +64,10 @@ const Register = () => {
 
   return (
     <div className="w-full h-full">
+      <Seo
+        title="Create your account"
+        description="Join FriendBook — a social network for sharing posts and stories with friends."
+      />
       <div className="flex justify-evenly items-start mt-5 px-3 sm:px-5 md:px-10 h-full">
         <div className="hidden md:flex justify-center w-full h-full">
           <div className="h-full">
@@ -67,21 +77,6 @@ const Register = () => {
 
         <div className="flex flex-col gap-y-5 px-1 w-full">
           {/* login regostor tab button */}
-          <div className="self-end flex gap-x-4">
-            <button
-              className="px-2 py-1 bg-black text-white rounded-lg mt-2 text-xs h-7 w-20 font-semibold hover:shadow-md"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-            <button
-              className="px-2 py-1 bg-blue-600 text-white rounded-lg mt-2 text-xs h-7 w-20 font-semibold hover:shadow-md"
-              onClick={() => navigate("/register")}
-            >
-              Register
-            </button>
-          </div>
-
           <div className="flex justify-center mt-8 w-full">
             <div className="flex flex-col gap-y-3 w-[95%] sm:w-[90%] md:w-[80%] lg:w-[75%]">
               {/* heading */}

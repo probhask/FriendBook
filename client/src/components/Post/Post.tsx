@@ -1,6 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { PostsType } from "../../types";
 import { ProfileImage, TagUserUI } from "@components/index";
+import PostMedia from "./PostMedia";
 import { timeAgo } from "@utils/timeAgo";
 import React from "react";
 
@@ -9,10 +10,9 @@ type Props = {
 };
 
 const Post = React.memo(({ post }: Props) => {
-  const navigate = useNavigate();
   return (
-    <>
-      <div className="flex gap-x-3 items-center flex-nowrap">
+    <article>
+      <header className="flex gap-x-3 items-center flex-nowrap">
         <ProfileImage
           size={35}
           navigateTo={`/profile/${post.postedBy._id}`}
@@ -34,26 +34,22 @@ const Post = React.memo(({ post }: Props) => {
         {post.totalTagUser > 0 && post.tagUser !== null && (
           <TagUserUI tagUser={post.tagUser} totalTagUser={post.totalTagUser} />
         )}
-      </div>
+      </header>
 
-      {/* description post */}
-      <p className="text-[1.2rem] text-base text-black/80 px-1 py-2">
-        {" "}
-        {post?.postDesc}
-      </p>
+      {post?.postDesc && (
+        <p className="text-base text-black/80 px-1 py-2">{post.postDesc}</p>
+      )}
 
-      {/* image */}
-      <div className="w-full h-full min-h-[10rem] max-h-[15rem] md:min-h-max md:h[20rem] lg:min-h-[28rem] flex justify-center items-center overflow-hidden bg-gray-100s">
-        <img
-          src={post?.image}
-          alt=""
-          className="min-w-full min-h-full object-contain object-center"
-          onClick={() =>
-            navigate(`/full-screen/${encodeURIComponent(post?.image)}`)
-          }
-        />
-      </div>
-    </>
+      <PostMedia
+        mediaType={post.mediaType}
+        image={post.image}
+        video={post.video}
+        audio={post.audio}
+        audioMeta={post.audioMeta}
+        alt={post.postDesc || `Post by ${post.postedBy?.name}`}
+        enableFullScreen
+      />
+    </article>
   );
 });
 Post.displayName = "Post";

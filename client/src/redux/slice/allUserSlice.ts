@@ -23,7 +23,6 @@ const allUserSlice = createSlice({
       state,
       action: PayloadAction<{ userId: string }>
     ) => {
-      console.log(action.payload.userId);
       state.data = state.data.filter(
         (user) => user._id !== action.payload.userId
       );
@@ -46,7 +45,6 @@ const allUserSlice = createSlice({
       .addCase(getAllUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "error in getting user";
-        console.log(action.error);
       });
   },
 });

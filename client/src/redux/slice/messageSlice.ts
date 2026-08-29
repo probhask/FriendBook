@@ -44,7 +44,10 @@ const messageSlice = createSlice({
   initialState,
   reducers: {
     addMessage: (state, action: PayloadAction<{ message: Message }>) => {
-      state.data.push(action.payload.message);
+      const msg = action.payload.message;
+      if (msg && !state.data.some((m) => m._id === msg._id)) {
+        state.data.push(msg);
+      }
     },
   },
   extraReducers(builder) {
@@ -61,8 +64,7 @@ const messageSlice = createSlice({
       })
       .addCase(getMessage.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "error in fetchuing message";
-        console.log(action.error);
+        state.error = action.error.message || "error fetching messages";
       });
 
     builder
@@ -70,17 +72,18 @@ const messageSlice = createSlice({
         state.sendingMessage = true;
         state.sendingMessageError = "";
       })
-      .addCase(createMessage.fulfilled, (state) => {
-        // state.data.push(action.payload);
-
+      .addCase(createMessage.fulfilled, (state, action) => {
+        const msg = action.payload;
+        if (msg && !state.data.some((m) => m._id === msg._id)) {
+          state.data.push(msg);
+        }
         state.sendingMessage = false;
         state.sendingMessageError = "";
       })
       .addCase(createMessage.rejected, (state, action) => {
         state.sendingMessage = false;
         state.sendingMessageError =
-          action.error.message || "error in fetchuing message";
-        console.log(action.error);
+          action.error.message || "error sending message";
       });
 
     builder

@@ -1,33 +1,25 @@
 import {
-  getUserDeatail,
   updateCoverImage,
   updateProfileImage,
 } from "@redux/AsyncFunctions/userDetailAsyc";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-import { getAuthData } from "@redux/slice/authSlice";
 import {
+  getDetailUserCoverImgLoading,
   getDetailUserData,
-  getDetailUserLoading,
+  getDetailUserProfileImgLoading,
 } from "@redux/slice/detailUserSlice";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { AiOutlineHome } from "react-icons/ai";
 import { FaCamera } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
 import { TfiEmail } from "react-icons/tfi";
 
-type Props = {
-  userId: string;
-  fetchIsFriends: () => void;
-};
-
-const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
+const DetailUserInfo = React.memo(() => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileCoverInputRef = useRef<HTMLInputElement>(null);
   const detailUserData = useAppSelector(getDetailUserData);
-  const detailUserLoading = useAppSelector(getDetailUserLoading);
-  const coverImgLoading = useAppSelector(getDetailUserLoading);
-  const profileImgLoading = useAppSelector(getDetailUserLoading);
-  const authId = useAppSelector(getAuthData)._id;
+  const coverImgLoading = useAppSelector(getDetailUserCoverImgLoading);
+  const profileImgLoading = useAppSelector(getDetailUserProfileImgLoading);
   const dispatch = useAppDispatch();
 
   const handleCameraClick = () => {
@@ -58,23 +50,6 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
       // console.log("Selected file:", file);
     }
   };
-  const fetchData = async () => {
-    await dispatch(getUserDeatail({ userId }));
-    // await dispatch(getPosts({ userId, own: true }));
-
-    // if (mainContainerRef.current) {
-    //   mainContainerRef.current.scrollIntoView();
-    // }
-  };
-
-  useEffect(() => {
-    if (!detailUserLoading) {
-      fetchData();
-      if (userId !== authId) {
-        fetchIsFriends();
-      }
-    }
-  }, [userId]);
   return (
     <>
       <div className="relative mb-3 sm:mb-10">
@@ -106,10 +81,10 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
         <div className="absolute top-[68%] sm:top-[75%] left-[50%] transform translate-x-[-50%] h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 rounded-full overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.3)] flex justify-center items-center bg-gray-300 border-2">
           {profileImgLoading ? (
             <p className=",min-w-full min-h-full bg-gray-600 animate-pulse"></p>
-          ) : !coverImgLoading && detailUserData.profileImage ? (
+          ) : !profileImgLoading && detailUserData.profileImage ? (
             <img
               src={detailUserData?.profileImage}
-              alt="cover-image"
+              alt={`${detailUserData?.name || "User"} profile photo`}
               className="w-full h-full max-h-full max-w-full object-cover object-top"
             />
           ) : (

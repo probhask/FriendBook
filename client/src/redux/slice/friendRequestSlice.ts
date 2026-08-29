@@ -43,6 +43,11 @@ const friendRequestSlice = createSlice({
         state.sendRequest.push(action.payload.data);
       }
     },
+    removeRecievedRequest: (state, action: PayloadAction<{ requestId: string }>) => {
+      state.recieveRequest = state.recieveRequest.filter(
+        (request) => request._id !== action.payload.requestId
+      );
+    },
   },
   extraReducers(builder) {
     //   send request
@@ -59,7 +64,6 @@ const friendRequestSlice = createSlice({
       .addCase(getSendFriendRequestList.rejected, (state, action) => {
         state.sendloading = false;
         state.error = action.error.message || "error";
-        console.log(action.error);
       });
 
     //   recieve request
@@ -76,7 +80,6 @@ const friendRequestSlice = createSlice({
       .addCase(getRecieveFriendRequestList.rejected, (state, action) => {
         state.recieveLoading = false;
         state.error = action.error.message || "error";
-        console.log(action.error);
       });
 
     // acceptReeuets
@@ -93,7 +96,6 @@ const friendRequestSlice = createSlice({
       .addCase(createFriendRequest.rejected, (state, action) => {
         state.createRequestLoading = "";
         state.error = action.error.message || "error creating friend request";
-        console.log(action.error);
       });
     // remove request
     builder
@@ -110,14 +112,11 @@ const friendRequestSlice = createSlice({
       })
       .addCase(rejectRecieveFriendRequest.rejected, (state, action) => {
         state.rejectRecieveRequestLoading = "";
-        state.error = action.error.message || "error creating friend request";
-        console.log(action.error);
+        state.error = action.error.message || "error rejecting friend request";
       });
 
     builder
       .addCase(cancelSendedRequest.pending, (state, action) => {
-        console.log("action sned", action);
-
         state.cancelSendedRequestLoading = action.meta.arg.sendRequest._id;
         state.error = "";
       })
@@ -130,8 +129,7 @@ const friendRequestSlice = createSlice({
       })
       .addCase(cancelSendedRequest.rejected, (state, action) => {
         state.cancelSendedRequestLoading = "";
-        state.error = action.error.message || "error creating friend request";
-        console.log(action.error);
+        state.error = action.error.message || "error cancelling friend request";
       });
   },
 });
@@ -152,5 +150,6 @@ export const getSendRequestLoading = (state: RootState) =>
 export const getfriendRequestError = (state: RootState) =>
   state.friendRequest.error;
 
-export const { addSendedRequest } = friendRequestSlice.actions;
+export const { addSendedRequest, removeRecievedRequest } =
+  friendRequestSlice.actions;
 export default friendRequestSlice.reducer;

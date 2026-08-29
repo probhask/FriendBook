@@ -31,9 +31,9 @@ const conversationSlice = createSlice({
         state.error = "";
       })
       .addCase(getConversation.rejected, (state, action) => {
+        if (action.meta.aborted) return;
         state.loading = false;
-        state.error = action.error.message || "error in getting user";
-        console.log(action.error);
+        state.error = action.error.message || "Couldn't load conversations";
       });
   },
 });

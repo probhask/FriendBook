@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /register
+Disallow: /chat
+Disallow: /profile
+Disallow: /full-screen
+Disallow: /create-post
+Disallow: /create-stories
+
+Sitemap: https://friendbook.netlify.app/sitemap.xml

@@ -7,6 +7,7 @@ import {
   likePost,
   unlikePost,
 } from "../AsyncFunctions/postAsync";
+import { addComment, deleteComment } from "../AsyncFunctions/commentAsync";
 import { RootState } from "../store";
 import toast from "react-hot-toast";
 
@@ -29,7 +30,7 @@ const initialState: PostSliceInitialState = {
   error: "",
   pageNumber: 1,
   hasMore: true,
-  limit: 3,
+  limit: 6,
   creatingPostLoading: false,
   creatingPostError: "",
   deletingPostLoading: false,
@@ -38,7 +39,16 @@ const initialState: PostSliceInitialState = {
 const postSlice = createSlice({
   name: "post",
   initialState,
-  reducers: {},
+  reducers: {
+    // Call before re-fetching a different feed (e.g. switching profiles) so
+    // pagination doesn't carry over stale page numbers / accumulated posts.
+    resetFeed: (state) => {
+      state.data = [];
+      state.pageNumber = 1;
+      state.hasMore = true;
+      state.error = "";
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getPosts.pending, (state) => {
@@ -46,22 +56,17 @@ const postSlice = createSlice({
         state.error = "";
       })
       .addCase(getPosts.fulfilled, (state, action) => {
-        state.hasMore =
-          action.payload.length > 0 || action.payload.length >= state.limit;
-        if (state.pageNumber === 1) {
-          state.data = action.payload;
-        } else {
-          state.data.push(...action.payload);
-        }
-        state.pageNumber += 1;
+        state.hasMore = action.payload.length >= state.limit;
+        const seen = new Set(state.data.map((p) => p._id));
+        state.data.push(...action.payload.filter((p) => !seen.has(p._id)));
         state.loading = false;
         state.error = "";
       })
       .addCase(getPosts.rejected, (state, action) => {
         state.loading = false;
+        if (action.meta.aborted) return;
         state.error = action.error.message || "error in getting post";
         state.hasMore = false;
-        // console.log(state.error);
       });
 
     builder
@@ -88,7 +93,7 @@ const postSlice = createSlice({
         state.deletingPostError = "";
       })
       .addCase(deletePost.fulfilled, (state, action) => {
-        state.data.filter((post) => post._id !== action.payload);
+        state.data = state.data.filter((post) => post._id !== action.payload);
         state.deletingPostLoading = false;
         state.deletingPostError = "";
         toast.success("post deleted");
@@ -102,83 +107,71 @@ const postSlice = createSlice({
 
     builder
       .addCase(likePost.pending, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return { ...post, isLikedByUser: true };
-          }
-          return post;
-        });
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post && !post.isLikedByUser) {
+          post.isLikedByUser = true;
+          post.likeCount += 1;
+        }
       })
-
       .addCase(likePost.fulfilled, (state, action) => {
-        const data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return {
-              ...post,
-              isLikedByUser: true,
-              LikedInfo: { _id: action.payload },
-            };
-          }
-          return post;
-        });
-
-        state.data = data;
-
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post) {
+          post.isLikedByUser = true;
+          post.LikedInfo = { _id: action.payload };
+        }
         state.error = "";
       })
       .addCase(likePost.rejected, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post._id === action.meta.arg.postId) {
-            return { ...post, isLikedByUser: false };
-          }
-          return post;
-        });
-
+        const post = state.data.find((p) => p._id === action.meta.arg.postId);
+        if (post && post.isLikedByUser) {
+          post.isLikedByUser = false;
+          post.likeCount = Math.max(0, post.likeCount - 1);
+        }
         state.error = action.error.message || "error in liking post";
-        console.log(state.error);
       });
 
     builder
       .addCase(unlikePost.pending, (state, action) => {
-        console.log("unlike");
-
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            console.log(
-              "matched part",
-              post.LikedInfo._id,
-              action.meta.arg.likeId
-            );
-
-            return { ...post, isLikedByUser: false };
-          }
-          return post;
-        });
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post && post.isLikedByUser) {
+          post.isLikedByUser = false;
+          post.likeCount = Math.max(0, post.likeCount - 1);
+        }
       })
-
       .addCase(unlikePost.fulfilled, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            return {
-              ...post,
-              isLikedByUser: false,
-              LikedInfo: null,
-            };
-          }
-          return post;
-        });
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post) {
+          post.isLikedByUser = false;
+          post.LikedInfo = null;
+        }
         state.error = "";
       })
       .addCase(unlikePost.rejected, (state, action) => {
-        state.data = state.data.map((post) => {
-          if (post.LikedInfo?._id === action.meta.arg.likeId) {
-            return { ...post, isLikedByUser: true };
-          }
-          return post;
-        });
-
+        const post = state.data.find(
+          (p) => p.LikedInfo?._id === action.meta.arg.likeId
+        );
+        if (post && !post.isLikedByUser) {
+          post.isLikedByUser = true;
+          post.likeCount += 1;
+        }
         state.error = action.error.message || "error in unliking post";
-        console.log(state.error);
+      });
+
+    // Keep the post's comment count in sync with the comment thread.
+    builder
+      .addCase(addComment.fulfilled, (state, action) => {
+        const post = state.data.find(
+          (p) => p._id === action.payload?.postId
+        );
+        if (post) post.commentCount += 1;
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const post = state.data.find((p) => p._id === action.payload.postId);
+        if (post) post.commentCount = Math.max(0, post.commentCount - 1);
       });
   },
 });
@@ -202,4 +195,5 @@ export const getDeletingPostLoading = (state: RootState) =>
 export const getDeletingPostError = (state: RootState) =>
   state.post.deletingPostError;
 
+export const { resetFeed } = postSlice.actions;
 export default postSlice.reducer;

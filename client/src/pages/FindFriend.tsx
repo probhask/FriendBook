@@ -1,12 +1,13 @@
 import React from "react";
 import { FriendRequest, FriendSuggestionContainer } from "../features";
+import Seo from "@components/Seo/Seo";
 
 const FindFriends = React.memo(() => {
   return (
-    <div className="w-full overflow-y-auto flex flex-col gap-y-5 min-h-full bg-white">
-      {/* friend request */}
+    <div className="w-full min-h-full rounded-2xl bg-white p-3 sm:p-5">
+      <Seo title="Find friends" noIndex />
+      <h1 className="mb-4 text-xl font-bold text-gray-800">Find friends</h1>
       <FriendRequest />
-      {/* friend Suggestion */}
       <FriendSuggestionContainer />
     </div>
   );

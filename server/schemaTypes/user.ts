@@ -1,3 +1,5 @@
+import {SanityAssetDocument} from '@sanity/client'
+
 export default {
   name: 'user',
   title: 'User',
@@ -7,6 +9,7 @@ export default {
       name: 'name',
       title: 'Name',
       type: 'string',
+      validation: (Rule: SanityAssetDocument) => Rule.required(),
     },
     {
       name: 'coverImage',
@@ -24,12 +27,17 @@ export default {
     {
       name: 'email',
       title: 'Email',
-      type: 'email',
+      type: 'string',
+      validation: (Rule: SanityAssetDocument) => Rule.required(),
     },
     {
+      // Stores a bcrypt hash only. Written exclusively by the auth backend
+      // (netlify/functions) — never a plaintext password.
       name: 'password',
-      title: 'Password',
+      title: 'Password Hash',
       type: 'string',
+      readOnly: true,
+      hidden: true,
     },
     {
       name: 'city',
@@ -40,7 +48,10 @@ export default {
       name: 'isLoggedIn',
       title: 'IsLoggedIn',
       type: 'boolean',
-      initialValue: true,
+      initialValue: false,
     },
   ],
+  preview: {
+    select: {title: 'name', subtitle: 'email', media: 'profileImage'},
+  },
 }

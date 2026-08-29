@@ -1,17 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense, type ReactNode } from "react";
+import { BiLoaderCircle } from "react-icons/bi";
 import ProtectedRoutes from "@utils/ProtectedRoutes";
-// import {
-//   Conversation,
-//   FindFriend,
-//   Friends,
-//   Home,
-//   Login,
-//   Profile,
-//   Register,
-// } from "@pages/index";
-import { lazy, Suspense } from "react";
 
 const Home = lazy(() => import("@pages/Home"));
+const SearchPage = lazy(() => import("@pages/Search"));
 const Login = lazy(() => import("@pages/Login"));
 const Register = lazy(() => import("@pages/Register"));
 const Profile = lazy(() => import("@pages/Profile"));
@@ -19,165 +12,102 @@ const Friends = lazy(() => import("@pages/Friends"));
 const FindFriend = lazy(() => import("@pages/FindFriend"));
 const Conversation = lazy(() => import("@pages/Conversation"));
 
-import HomeLayout from "@container/HomeLayout";
-import {
-  ConversationPreview,
-  CreatePostForm,
-  EditPersonalInfo,
-  Messenger,
-  UserProfileInfo,
-} from "@features/index";
-import PageNotFound from "@components/PageNotFound/PageNotFound";
-import { FullScreenImage } from "@components/index";
-import CreateStories from "@features/Stories/CreateStories";
-import { BiLoaderCircle } from "react-icons/bi";
+const HomeLayout = lazy(() => import("@container/HomeLayout"));
+const PageNotFound = lazy(
+  () => import("@components/PageNotFound/PageNotFound")
+);
+const FullScreenImage = lazy(
+  () => import("@components/FullScreenImage/FullScreenImage")
+);
+const CreatePostForm = lazy(
+  () => import("@features/CreatePost/CreatePostForm")
+);
+const CreateStories = lazy(() => import("@features/Stories/CreateStories"));
+const ConversationPreview = lazy(
+  () => import("@features/Conversation/Preview/ConversationPreview")
+);
+const Messenger = lazy(
+  () => import("@features/Conversation/Messenger/Messenger")
+);
+const UserProfileInfo = lazy(
+  () => import("@features/Profile/UserProfileInfo")
+);
+const EditPersonalInfo = lazy(
+  () => import("@features/Profile/Edit/EditPersonalInfo")
+);
+
+const PageLoader = () => (
+  <div className="w-screen h-screen flex justify-center items-center">
+    <BiLoaderCircle className="size-10 md:size-20 animate-spin text-blue-700" />
+  </div>
+);
+
+const wrap = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>;
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <Suspense
-        fallback={
-          <div className="w-screen h-screen flex justify-center items-center">
-            <BiLoaderCircle className="size-10 md:size-20 animate-spin text-blue-700 duration-75 ease-in" />
-          </div>
-        }
-      >
-        <ProtectedRoutes>
-          <HomeLayout />
-        </ProtectedRoutes>
-      </Suspense>
+    element: wrap(
+      <ProtectedRoutes>
+        <HomeLayout />
+      </ProtectedRoutes>
     ),
     children: [
-      {
-        path: "/",
-        element: (
-          <Suspense>
-            <Home />
-          </Suspense>
-        ),
-      },
-      {
-        path: "/create-post",
-        element: (
-          <Suspense>
-            <CreatePostForm />
-          </Suspense>
-        ),
-      },
-      {
-        path: "/create-stories",
-        element: (
-          <Suspense>
-            <CreateStories />
-          </Suspense>
-        ),
-      },
-      {
-        path: "/find-friend",
-        element: (
-          <Suspense>
-            <FindFriend />
-          </Suspense>
-        ),
-      },
-      {
-        path: "/friends",
-        element: (
-          <Suspense>
-            <Friends />
-          </Suspense>
-        ),
-      },
+      { path: "/", element: wrap(<Home />) },
+      { path: "/search", element: wrap(<SearchPage />) },
+      { path: "/create-post", element: wrap(<CreatePostForm />) },
+      { path: "/create-stories", element: wrap(<CreateStories />) },
+      { path: "/find-friend", element: wrap(<FindFriend />) },
+      { path: "/friends", element: wrap(<Friends />) },
       {
         path: "/chat",
-        element: (
-          <Suspense>
-            <Conversation />
-          </Suspense>
-        ),
+        element: wrap(<Conversation />),
         children: [
-          {
-            // path: "chat/",
-            index: true,
-            element: (
-              <Suspense>
-                <ConversationPreview />
-              </Suspense>
-            ),
-          },
+          { index: true, element: wrap(<ConversationPreview />) },
           {
             path: "/chat/messenger/:conversationId",
-            element: (
-              <Suspense>
-                <Messenger />
-              </Suspense>
-            ),
+            element: wrap(<Messenger />),
           },
         ],
       },
-
       {
         path: "/profile",
-        element: (
-          <Suspense>
-            <Profile />
-          </Suspense>
-        ),
+        element: wrap(<Profile />),
         children: [
           {
             path: "edit-personal-info",
-            element: (
-              <Suspense>
-                <EditPersonalInfo />
-              </Suspense>
-            ),
+            element: wrap(<EditPersonalInfo />),
           },
-          {
-            path: ":id",
-            index: true,
-            element: (
-              <Suspense>
-                <UserProfileInfo />
-              </Suspense>
-            ),
-          },
+          { path: ":id", element: wrap(<UserProfileInfo />) },
         ],
       },
     ],
   },
   {
     path: "/full-screen/:src",
-    element: (
-      <Suspense>
-        <ProtectedRoutes>
-          <FullScreenImage />
-        </ProtectedRoutes>
-      </Suspense>
+    element: wrap(
+      <ProtectedRoutes>
+        <FullScreenImage />
+      </ProtectedRoutes>
     ),
   },
-
   {
     path: "login",
-    element: (
-      <Suspense>
-        <ProtectedRoutes>
-          <Login />
-        </ProtectedRoutes>
-      </Suspense>
+    element: wrap(
+      <ProtectedRoutes>
+        <Login />
+      </ProtectedRoutes>
     ),
   },
   {
     path: "register",
-    element: (
-      <Suspense>
-        <ProtectedRoutes>
-          <Register />
-        </ProtectedRoutes>
-      </Suspense>
+    element: wrap(
+      <ProtectedRoutes>
+        <Register />
+      </ProtectedRoutes>
     ),
   },
-  { path: "*", element: <PageNotFound /> },
+  { path: "*", element: wrap(<PageNotFound />) },
 ]);
 
 export default router;
