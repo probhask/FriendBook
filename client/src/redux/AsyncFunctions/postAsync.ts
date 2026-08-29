@@ -16,19 +16,7 @@ export const getPosts = createAsyncThunk<
   const startIndex = (pageNumber - 1) * limit;
   const endIndex = pageNumber * limit - 1;
 
-  try {
-    let idArray = [userId];
-    if (!own) {
-      const friendsIdsArray = await getFriendsIdsList(userId);
-      idArray = [...friendsIdsArray, userId];
-    }
-
-    const query = `
-  *[_type == 'post' && (
-    postedBy._ref in $idArray ||
-    tagUser[]._ref in $idArray
-  )]
-  | order(_createdAt desc) [$startIndex...$endIndex]{
+  const projection = `{
     _id,
     postDesc,
     'image': image.asset->url,
@@ -42,9 +30,32 @@ export const getPosts = createAsyncThunk<
     'LikedInfo':*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]{_id},
     'isLikedByUser': defined(*[_type == 'like' && (likeby._ref == $userId && post._ref == ^._id)][0]),
     _createdAt
-  }
-`;
-    const params = { idArray, startIndex, endIndex, userId };
+  }`;
+
+  try {
+    let query: string;
+    let params: Record<string, unknown>;
+
+    if (own) {
+      // Profile view — just this user's posts, newest first.
+      query = `*[_type == 'post' && postedBy._ref == $userId]
+        | order(_createdAt desc) [$startIndex...$endIndex]${projection}`;
+      params = { userId, startIndex, endIndex };
+    } else {
+      // Home feed — everyone's posts, but ranked:
+      //   1. friends' posts + posts you're tagged in, before strangers'
+      //   2. posts you haven't liked yet, before ones you have
+      //   3. newest first
+      const friendsIdsArray = await getFriendsIdsList(userId);
+      const idArray = [...friendsIdsArray, userId];
+      query = `*[_type == 'post']
+        | order(
+            (postedBy._ref in $idArray || tagUser[]._ref in $idArray) desc,
+            defined(*[_type == 'like' && likeby._ref == $userId && post._ref == ^._id][0]) asc,
+            _createdAt desc
+          ) [$startIndex...$endIndex]${projection}`;
+      params = { idArray, userId, startIndex, endIndex };
+    }
 
     const sanityResult = await client.fetch<PostsType[]>(query, params);
 
