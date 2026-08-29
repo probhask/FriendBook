@@ -6,8 +6,10 @@ import {
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
 import { getAuthData } from "@redux/slice/authSlice";
 import {
+  getDetailUserCoverImgLoading,
   getDetailUserData,
   getDetailUserLoading,
+  getDetailUserProfileImgLoading,
 } from "@redux/slice/detailUserSlice";
 import React, { useEffect, useRef } from "react";
 import { AiOutlineHome } from "react-icons/ai";
@@ -25,8 +27,8 @@ const DetailUserInfo = React.memo(({ userId, fetchIsFriends }: Props) => {
   const fileCoverInputRef = useRef<HTMLInputElement>(null);
   const detailUserData = useAppSelector(getDetailUserData);
   const detailUserLoading = useAppSelector(getDetailUserLoading);
-  const coverImgLoading = useAppSelector(getDetailUserLoading);
-  const profileImgLoading = useAppSelector(getDetailUserLoading);
+  const coverImgLoading = useAppSelector(getDetailUserCoverImgLoading);
+  const profileImgLoading = useAppSelector(getDetailUserProfileImgLoading);
   const authId = useAppSelector(getAuthData)._id;
   const dispatch = useAppDispatch();
 

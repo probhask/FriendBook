@@ -86,6 +86,11 @@ export type Groups = {
 export type Conversation = {
   _id: string;
   partner: User;
+  lastMessage?: {
+    message: string;
+    _createdAt: string;
+    fromMe: boolean;
+  } | null;
   _createdAt: string;
 };
 export type RawConversation = {

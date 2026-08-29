@@ -4,6 +4,7 @@ import { BiLoaderCircle } from "react-icons/bi";
 import ProtectedRoutes from "@utils/ProtectedRoutes";
 
 const Home = lazy(() => import("@pages/Home"));
+const SearchPage = lazy(() => import("@pages/Search"));
 const Login = lazy(() => import("@pages/Login"));
 const Register = lazy(() => import("@pages/Register"));
 const Profile = lazy(() => import("@pages/Profile"));
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "/", element: wrap(<Home />) },
+      { path: "/search", element: wrap(<SearchPage />) },
       { path: "/create-post", element: wrap(<CreatePostForm />) },
       { path: "/create-stories", element: wrap(<CreateStories />) },
       { path: "/find-friend", element: wrap(<FindFriend />) },

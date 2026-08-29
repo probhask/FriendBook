@@ -15,7 +15,6 @@ export { default as SmMenu } from "./HomeLayout/Navbar/SmMenu/SmMenu";
 
 // navbar/search
 export { default as Search } from "./HomeLayout/Navbar/Search/Search";
-export { default as SearchResult } from "./HomeLayout/Navbar/Search/SearchResult";
 export { default as LeftBar } from ".//HomeLayout/LeftBar/LeftBar";
 export { default as RightBar } from "./HomeLayout/RightBar/RightBar";
 
@@ -34,6 +33,13 @@ export { default as CreateComment } from "./Post/Comment/CreateComment";
 export { default as ProfilePreview } from "./Profile/ProfilePreview";
 
 // ui
+export {
+  Spinner,
+  CenteredSpinner,
+  EmptyState,
+  ErrorState,
+  RowsSkeleton,
+} from "./UI/States";
 export { default as ProfileImage } from "./UI/ProfileImage";
 export { default as Button } from "./UI/Button";
 export { default as GoToTopButton } from "./UI/GoToTopButton";
@@ -51,5 +57,3 @@ export { default as MessengerShimmer } from "./Shimmer/MessengerShimmer";
 
 export { default as FullScreenImage } from "./FullScreenImage/FullScreenImage";
 
-// search
-export { default as HighLightedText } from "./Search/HighLightedText";

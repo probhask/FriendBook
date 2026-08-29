@@ -7,12 +7,17 @@ import {
 } from "@redux/slice/allUserSlice";
 import { memo, useEffect } from "react";
 import { FriendSuggestion } from "@features/index";
-import { FriendSuggestionShimmer } from "@components/index";
+import {
+  EmptyState,
+  ErrorState,
+  FriendSuggestionShimmer,
+} from "@components/index";
+import { FiUserCheck } from "react-icons/fi";
 
 const FriendSuggestionContainer = memo(() => {
-  const allUserData = useAppSelector(getAllUserData);
-  const allUserLoading = useAppSelector(getAllUserLoading);
-  const allUserError = useAppSelector(getAllUserError);
+  const users = useAppSelector(getAllUserData);
+  const loading = useAppSelector(getAllUserLoading);
+  const error = useAppSelector(getAllUserError);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -21,28 +26,37 @@ const FriendSuggestionContainer = memo(() => {
   }, [dispatch]);
 
   return (
-    <div className="px-1 py-2 bg-gray-50">
-      <h1 className="mb-2 text-base font-bold px-2">Suggestions</h1>
-      <div className="grid sm:grid-cols-2  gap-x-2 gap-y-2">
-        {allUserData &&
-          allUserData.map((user, index) => (
-            <FriendSuggestion suggestionUser={user} key={index} />
+    <section className="px-2 py-3">
+      <h2 className="mb-3 px-1 text-base font-bold text-gray-800">
+        People you may know
+      </h2>
+
+      {loading && users.length === 0 && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <FriendSuggestionShimmer key={i} />
           ))}
-        {allUserLoading &&
-          [1, 2, 3, 4].map((index) => <FriendSuggestionShimmer key={index} />)}
-      </div>
-      {!allUserLoading && (
-        <div
-          className={`my-5 text-center mx-auto text-sm font-semibold ${
-            allUserError ? "text-red-500" : "text-gray-500"
-          }`}
-        >
-          {allUserData && allUserData.length === 0 && !allUserError
-            ? " No suggestions"
-            : `${allUserError}`}
         </div>
       )}
-    </div>
+
+      {!loading && error && users.length === 0 && (
+        <ErrorState message={error} onRetry={() => dispatch(getAllUser())} />
+      )}
+
+      {!loading && !error && users.length === 0 && (
+        <EmptyState
+          icon={<FiUserCheck />}
+          title="You're all caught up"
+          description="No new people to suggest right now."
+        />
+      )}
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        {users.map((user) => (
+          <FriendSuggestion suggestionUser={user} key={user._id} />
+        ))}
+      </div>
+    </section>
   );
 });
 

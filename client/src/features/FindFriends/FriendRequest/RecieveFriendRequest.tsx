@@ -1,8 +1,11 @@
 import {
   Button,
+  EmptyState,
+  ErrorState,
   FriendSuggestionShimmer,
   ProfilePreview,
 } from "@components/index";
+import { FiInbox } from "react-icons/fi";
 import { acceptRequest } from "@redux/AsyncFunctions/friendAsync";
 import {
   getRecieveFriendRequestList,
@@ -74,17 +77,21 @@ const RecieveFriendRequestComp = memo(() => {
             </div>
           ))}
       </div>
-      {!recieveRequestLoading && (
-        <div
-          className={`my-5 text-center mx-auto text-sm font-semibold ${
-            error ? "text-red-500" : "text-gray-500"
-          }`}
-        >
-          {recieveFriendRequest && recieveFriendRequest.length === 0 && !error
-            ? " No suggestions"
-            : `${error}`}
-        </div>
+      {!recieveRequestLoading && error && (
+        <ErrorState
+          message={error}
+          onRetry={() => dispatch(getRecieveFriendRequestList())}
+        />
       )}
+      {!recieveRequestLoading &&
+        !error &&
+        recieveFriendRequest.length === 0 && (
+          <EmptyState
+            icon={<FiInbox />}
+            title="No friend requests"
+            description="When someone sends you a request, it'll show up here."
+          />
+        )}
     </>
   );
 });

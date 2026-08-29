@@ -1,40 +1,34 @@
 import React from "react";
 import { Message } from "../../../types";
-// import { AiFillDelete, AiOutlineLoading } from "react-icons/ai";
-// import { deleteMessage } from "@redux/AsyncFunctions/messageAsync";
-// import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
-// import { selectDeletingMessageLoading } from "@redux/slice/messageSlice";
+import { timeAgo } from "@utils/timeAgo";
 
 type Props = {
   message: Message;
   own: boolean;
+  grouped?: boolean;
 };
 
-const MessageUI = React.memo(({ message, own }: Props) => {
-  // const deleting = useAppSelector(selectDeletingMessageLoading);
-  // const dispatch = useAppDispatch();
+const MessageUI = React.memo(({ message, own, grouped }: Props) => {
   return (
     <div
-      className={`flex justify-between w-fit max-w-[70%]  px-2 py-1 rounded-2xl text-base font-semibold ${
-        own
-          ? "self-end bg-gray-100 rounded-tr-none"
-          : "self-start bg-blue-500 rounded-tl-none "
+      className={`flex flex-col ${own ? "items-end" : "items-start"} ${
+        grouped ? "mt-0.5" : "mt-2"
       }`}
     >
-      {message?.message}
-      {/* own message delete func */}
-      {/* {own && (
-        <span
-          className=" text-2xl text-red-600 cursor-pointer"
-          onClick={() => dispatch(deleteMessage({ messageId: message?._id }))}
-        >
-          {deleting === message?._id ? (
-            <AiOutlineLoading className="animate-spin" />
-          ) : (
-            <AiFillDelete />
-          )}
+      <div
+        className={`w-fit max-w-[78%] px-3 py-1.5 text-[15px] leading-snug break-words ${
+          own
+            ? "bg-blue-600 text-white rounded-2xl rounded-br-md"
+            : "bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-bl-md"
+        }`}
+      >
+        {message?.message}
+      </div>
+      {!grouped && message?._createdAt && (
+        <span className="mt-0.5 px-1 text-[10px] text-gray-400">
+          {timeAgo(message._createdAt)}
         </span>
-      )} */}
+      )}
     </div>
   );
 });

@@ -16,39 +16,42 @@ const SendMessage = React.memo(({ conversationId }: Props) => {
 
   const handleMessageSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (conversationId && message.length > 0) {
-      dispatch(createMessage({ conversationId, message })).finally(() =>
-        setMessage("")
-      );
-    }
+    const text = message.trim();
+    if (!conversationId || !text || sending) return;
+    setMessage("");
+    dispatch(createMessage({ conversationId, message: text }));
   };
 
   return (
-    <div className=" overflow-hidden sticky top-full left-0 right-0  flex justify-center z-10 w-full py-0.5">
-      <form
-        className="flex items-center gap-x-1 bg-white px-2 py-1.5 overflow-hidden w-full"
-        onSubmit={handleMessageSubmit}
+    <form
+      className="sticky bottom-0 z-10 flex items-center gap-x-2 border-t border-gray-200 bg-white px-3 py-2"
+      onSubmit={handleMessageSubmit}
+    >
+      <label htmlFor="chat-message" className="sr-only">
+        Message
+      </label>
+      <input
+        id="chat-message"
+        type="text"
+        autoComplete="off"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Type a message…"
+        className="w-full rounded-full bg-gray-100 px-4 py-2 text-[15px] text-gray-800 outline-none focus:bg-gray-50 focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        aria-label="Send message"
+        disabled={sending || !message.trim()}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40"
       >
-        <div className="w-full">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            name="message"
-            id=""
-            placeholder="Message..."
-            className="w-full outline-none bg-gray-200 text-sm px-3 py-2 font-semibold text-gray-800 rounded-lg"
-          />
-        </div>
-        <button type="submit" className="ml-2 text-blue-600" disabled={sending}>
-          {sending ? (
-            <FaArrowRotateRight className="animate-spin text-2xl" />
-          ) : (
-            <IoSend className="cursor-pointer text-2xl" />
-          )}
-        </button>
-      </form>
-    </div>
+        {sending ? (
+          <FaArrowRotateRight className="animate-spin text-lg" />
+        ) : (
+          <IoSend className="text-lg" />
+        )}
+      </button>
+    </form>
   );
 });
 

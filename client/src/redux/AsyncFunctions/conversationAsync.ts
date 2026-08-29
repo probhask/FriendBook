@@ -20,8 +20,11 @@ export const getConversation = createAsyncThunk<Conversation[]>(
           select(userB._ref != $meId => userB->${USER_SUB}),
           null
         ),
+        'lastMessage': *[_type=='chat' && conversation._ref==^._id] | order(_createdAt desc)[0]{
+          message, _createdAt, 'fromMe': sender._ref == $meId
+        },
         _createdAt
-      }`;
+      } | order(coalesce(lastMessage._createdAt, _createdAt) desc)`;
 
       return await client.fetch<Conversation[]>(query, { meId });
     } catch (error) {

@@ -1,10 +1,17 @@
-import { PostContainer, PostShimmer } from "@components/index";
+import {
+  PostContainer,
+  PostShimmer,
+  EmptyState,
+  ErrorState,
+} from "@components/index";
+import { FiFileText } from "react-icons/fi";
 import useWindowInfiniteScroll from "@hooks/useWindowInfiniteScroll";
 import { getPosts } from "@redux/AsyncFunctions/postAsync";
 import { useAppDispatch, useAppSelector } from "@redux/hooks/storeHook";
 import { getAuthData } from "@redux/slice/authSlice";
 import {
   getPostData,
+  getPostError,
   getPostHasMore,
   getPostLoading,
   resetFeed,
@@ -16,6 +23,7 @@ import { useParams } from "react-router-dom";
 const Feed = React.memo(() => {
   const postData = useAppSelector(getPostData);
   const postLoading = useAppSelector(getPostLoading);
+  const postError = useAppSelector(getPostError);
   const postHasMore = useAppSelector(getPostHasMore);
   const authUserId = useAppSelector(getAuthData)._id;
   const dispatch = useAppDispatch();
@@ -51,6 +59,15 @@ const Feed = React.memo(() => {
     return () => promise.abort();
   }, [dispatch, userId, own]);
 
+  if (!postLoading && postError && postData.length === 0) {
+    return (
+      <ErrorState
+        message={postError}
+        onRetry={() => userId && dispatch(getPosts({ userId, own }))}
+      />
+    );
+  }
+
   return (
     <>
       <div className="w-full flex flex-col gap-y-3">
@@ -65,9 +82,15 @@ const Feed = React.memo(() => {
       </div>
       {postLoading && <PostShimmer />}
       {!postLoading && postData.length === 0 && (
-        <div className="mt-5 mb-2 text-center text-gray-500">
-          No posts yet
-        </div>
+        <EmptyState
+          icon={<FiFileText />}
+          title="No posts yet"
+          description={
+            own
+              ? "This profile hasn't posted anything."
+              : "Follow friends or create the first post."
+          }
+        />
       )}
     </>
   );
