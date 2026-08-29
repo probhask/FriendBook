@@ -1,33 +1,51 @@
 import { Menu } from "@components/index";
 import useDetectOutSideClick from "@hooks/useDetectOutSideClick";
-import React from "react";
-import { AiFillCloseCircle } from "react-icons/ai";
+import React, { useEffect } from "react";
+import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {
   menuStatus: boolean;
   closeMenu: () => void;
 };
 
-const SmMenu = React.memo(({ menuStatus, closeMenu }: Props) => {
-  const closeRef = useDetectOutSideClick<HTMLDivElement>(closeMenu);
+const SmMenu = React.memo(({ closeMenu }: Props) => {
+  const panelRef = useDetectOutSideClick<HTMLDivElement>(closeMenu);
+
+  // Close on Escape, lock body scroll while open.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeMenu();
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [closeMenu]);
+
   return (
     <div
-      className={`md:hidden absolute top-0 right-0 w-svw h-svh   flex justify-end ${
-        menuStatus ? "animate-slide-in-right" : "animate-slide-out-right"
-      }`}
+      className="fixed inset-0 z-[100] flex bg-black/40 md:hidden"
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        className="relative bg-white w-full sm:w-[70%] h-full"
-        ref={closeRef}
+        ref={panelRef}
+        className="relative h-full w-[78%] max-w-xs animate-slide-in-left overflow-y-auto bg-white shadow-xl"
       >
-        <Menu smClose={closeMenu} />
-        <AiFillCloseCircle
-          className="text-2xl absolute top-4 right-0.5 sm:right-2 cursor-pointer"
+        <button
+          type="button"
+          aria-label="Close menu"
           onClick={closeMenu}
-        />
+          className="absolute right-2 top-3 z-10 rounded-full p-1 text-2xl text-gray-500 hover:bg-gray-100"
+        >
+          <AiOutlineClose />
+        </button>
+        <Menu smClose={closeMenu} />
       </div>
     </div>
   );
 });
+
+SmMenu.displayName = "SmMenu";
 
 export default SmMenu;
